@@ -1,0 +1,24 @@
+{
+    "name": "Receivers",
+    "description": "Library of various receivers",
+    "keywords": "",
+    "authors": {
+        "name": "Martin Budden",
+        "url": "https://github.com/martinbudden"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/martinbudden/Library-Recivers.git"
+    },
+    "dependencies": [
+        {
+            "name": "martinbudden/TaskUtilities",
+            "version": "^0.0.1"
+        }
+    ],
+    "license": "MIT",
+    "version": "0.0.1",
+    "frameworks": "*",
+    "platforms": "*",
+    "headers": [ "ESPNOW_Transceiver.h", "CockpitBase.h", "ReceiverAtomJoyStick.h", "ReceiverBase.h", "ReceiverSBUS.h", "ReceiverSerial.h", "ReceiverTask.h", "ReceiverTelemetry.h", "ReceiverTelemetryData.h", "ReceiverVirtual.h", "SerialPort.h" ]
+}
