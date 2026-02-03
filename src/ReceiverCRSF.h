@@ -107,7 +107,6 @@ private:
     ReceiverCRSF& operator=(ReceiverCRSF&&) = delete;
 public:
     virtual bool onDataReceivedFromISR(uint8_t data) override;
-    virtual void getStickValues(float& throttleStick, float& rollStick, float& pitchStick, float& yawStick) const override;
     virtual uint16_t getChannelPWM(size_t index) const override;
     virtual bool unpackPacket() override;
     static uint8_t calculateCRC(uint8_t crc, uint8_t value);

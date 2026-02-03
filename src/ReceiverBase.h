@@ -103,29 +103,10 @@ public:
     virtual uint8_t readByte() { return 0; }
     virtual bool update(uint32_t tickCountDelta) = 0;
     virtual bool unpackPacket() = 0;
-    virtual void getStickValues(float& throttleStick, float& rollStick, float& pitchStick, float& yawStick) const = 0;
 
-    inline controls_t getControls() const { return _controls; }
-    //! Maps floats in range [0,1] for throttle, [-1,1] for roll, pitch, and yaw to channels in range [1000,2000]
-    controls_pwm_t getControlsPWM() const {
-        return controls_pwm_t {
-            .throttle = static_cast<uint16_t>(_positiveHalfThrottle ? (_controls.throttle*CHANNEL_RANGE_F + CHANNEL_LOW_F): (_controls.throttle * CHANNEL_RANGE_F / 2.0F) + CHANNEL_MIDDLE_F),
-            .roll = static_cast<uint16_t>((_controls.roll * CHANNEL_RANGE_F / 2.0F) + CHANNEL_MIDDLE_F),
-            .pitch = static_cast<uint16_t>((_controls.pitch * CHANNEL_RANGE_F / 2.0F) + CHANNEL_MIDDLE_F),
-            .yaw = static_cast<uint16_t>((_controls.yaw * CHANNEL_RANGE_F /2.0F) + CHANNEL_MIDDLE_F)
-        };
-    }
-    /*! For reversible robots and 3D flying
-        Maps floats in the range [-1,1] for throttle, roll, pitch, and yaw to channels in range [1000,2000]
-    */
-    controls_pwm_t getControlsPWM_NegativeThrottle() const {
-        return controls_pwm_t {
-            .throttle = static_cast<uint16_t>((_controls.throttle * CHANNEL_RANGE_F / 2.0F) + CHANNEL_MIDDLE_F),
-            .roll = static_cast<uint16_t>((_controls.roll * CHANNEL_RANGE_F / 2.0F) + CHANNEL_MIDDLE_F),
-            .pitch = static_cast<uint16_t>((_controls.pitch * CHANNEL_RANGE_F / 2.0F) + CHANNEL_MIDDLE_F),
-            .yaw = static_cast<uint16_t>((_controls.yaw * CHANNEL_RANGE_F /2.0F) + CHANNEL_MIDDLE_F)
-        };
-    }
+    //! Controls in range [0,1] for throttle, [-1,1] for roll, pitch, and yaw
+    controls_t getControls() const { return _controls; }
+    controls_pwm_t getControlsPWM() const { return _controlsPWM; }//!< channels in range [1000,2000]
 
     virtual uint16_t getChannelPWM(size_t index) const = 0;
     uint32_t getAuxiliaryChannelCount() const { return _auxiliaryChannelCount; }
@@ -138,17 +119,17 @@ public:
         return (channelValue >= CHANNEL_RANGE_MIN + (range.startStep*CHANNEL_RANGE_STEP) && channelValue < CHANNEL_RANGE_MIN + (range.endStep*CHANNEL_RANGE_STEP));
     }
 
-    inline uint32_t getSwitch(size_t index) const { return static_cast<uint32_t>((_switches & (0b11U << (2*index))) >> (2*index)); }
-    inline void setSwitch(size_t index, uint8_t value) { _switches &= static_cast<uint32_t>(~(0b11U << (2*index))); _switches |= static_cast<uint32_t>((value & 0b11U) << (2*index)); }
-    inline uint32_t getSwitches() const { return _switches; }
+    uint32_t getSwitch(size_t index) const { return static_cast<uint32_t>((_switches & (0b11U << (2*index))) >> (2*index)); }
+    void setSwitch(size_t index, uint8_t value) { _switches &= static_cast<uint32_t>(~(0b11U << (2*index))); _switches |= static_cast<uint32_t>((value & 0b11U) << (2*index)); }
+    uint32_t getSwitches() const { return _switches; }
 
-    inline int32_t getDroppedPacketCountDelta() const { return _droppedPacketCountDelta; }
-    inline uint32_t getTickCountDelta() const { return _tickCountDelta; }
-    inline static float Q12dot4_to_float(int32_t q4dot12) { return static_cast<float>(q4dot12) * (1.0F / 2048.0F); } //<! convert Q12dot4 fixed point number to floating point
+    int32_t getDroppedPacketCountDelta() const { return _droppedPacketCountDelta; }
+    uint32_t getTickCountDelta() const { return _tickCountDelta; }
+    static float Q12dot4_to_float(int32_t q4dot12) { return static_cast<float>(q4dot12) * (1.0F / 2048.0F); } //<! convert Q12dot4 fixed point number to floating point
 
-    inline bool isPacketReceived() const { return _packetReceived; }
-    inline bool isNewPacketAvailable() const { return _newPacketAvailable; }
-    inline void clearNewPacketAvailable() { _newPacketAvailable = false; }
+    bool isPacketReceived() const { return _packetReceived; }
+    bool isNewPacketAvailable() const { return _newPacketAvailable; }
+    void clearNewPacketAvailable() { _newPacketAvailable = false; }
 protected:
     ReceiverWatcher* _receiverWatcher {nullptr};
     uint8_t _packetReceived {false}; // may be invalid packet
@@ -161,5 +142,6 @@ protected:
     uint32_t _tickCountDelta {};
     uint32_t _switches {}; // 16 2 or 3 positions switches, each using 2-bits
     controls_t _controls {}; //!< the main 4 channels
+    controls_pwm_t _controlsPWM {}; //!< the main 4 channels in PWM range
     uint32_t _auxiliaryChannelCount {};
 };

@@ -35,14 +35,6 @@ bool ReceiverVirtual::unpackPacket()
     return true;
 }
 
-void ReceiverVirtual::getStickValues(float& throttleStick, float& rollStick, float& pitchStick, float& yawStick) const
-{
-    throttleStick = _controls.throttle;
-    rollStick = _controls.roll;
-    pitchStick = _controls.pitch;
-    yawStick = _controls.yaw;
-}
-
 uint16_t ReceiverVirtual::getChannelPWM(size_t index) const
 {
     // map switches to the auxiliary channels

@@ -21,7 +21,6 @@ public:
     virtual int32_t WAIT_FOR_DATA_RECEIVED(uint32_t ticksToWait) override;
     virtual bool update(uint32_t tickCountDelta) override;
     virtual bool unpackPacket() override;
-    virtual void getStickValues(float& throttleStick, float& rollStick, float& pitchStick, float& yawStick) const override;
     virtual uint16_t getChannelPWM(size_t index) const override;
 public: // for testing
     void setChannelPWM(size_t index, uint16_t pwmValue);

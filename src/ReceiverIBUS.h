@@ -25,7 +25,6 @@ private:
     ReceiverIBUS& operator=(ReceiverIBUS&&) = delete;
 public:
     virtual bool onDataReceivedFromISR(uint8_t data) override;
-    virtual void getStickValues(float& throttleStick, float& rollStick, float& pitchStick, float& yawStick) const override;
     virtual uint16_t getChannelPWM(size_t index) const override;
     virtual bool unpackPacket() override;
     uint16_t calculateChecksum() const;

@@ -22,7 +22,6 @@ public:
 
     virtual int32_t WAIT_FOR_DATA_RECEIVED(uint32_t ticksToWait) override;
     virtual bool update(uint32_t tickCountDelta) override;
-    virtual void getStickValues(float& throttle, float& roll, float& pitch, float& yaw) const override;
     virtual EUI_48_t getMyEUI() const override;
     virtual EUI_48_t getPrimaryPeerEUI() const override;
     virtual void broadcastMyEUI() const override;

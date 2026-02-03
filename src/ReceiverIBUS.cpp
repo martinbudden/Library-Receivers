@@ -7,17 +7,6 @@ ReceiverIBUS::ReceiverIBUS(SerialPort& serialPort) :
     _auxiliaryChannelCount = CHANNEL_COUNT - STICK_COUNT;
 }
 
-/*!
-Maps channels in range [1000,2000] to floats in range [0,1] for throttle, [-1,1] for roll, pitch yaw
-*/
-void ReceiverIBUS::getStickValues(float& throttleStick, float& rollStick, float& pitchStick, float& yawStick) const
-{
-    throttleStick = (static_cast<float>(_channels[THROTTLE]) - CHANNEL_RANGE_F) / CHANNEL_RANGE_F;
-    rollStick = (static_cast<float>(_channels[ROLL]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
-    pitchStick = (static_cast<float>(_channels[PITCH]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
-    yawStick = (static_cast<float>(_channels[YAW]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
-}
-
 uint16_t ReceiverIBUS::getChannelPWM(size_t index) const
 {
     if (index >= CHANNEL_COUNT) {
@@ -103,6 +92,17 @@ bool ReceiverIBUS::unpackPacket()
         _channels[ii] = ((_packet[offset] & 0xF0) >> 4) | (_packet[offset + 2] & 0xF0) | ((_packet[offset + 4] & 0xF0) << 4);
         offset += 6; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     }
+
+    _controls.throttle = (static_cast<float>(_channels[THROTTLE]) - CHANNEL_RANGE_F) / CHANNEL_RANGE_F;
+    _controls.roll = (static_cast<float>(_channels[ROLL]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
+    _controls.pitch = (static_cast<float>(_channels[PITCH]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
+    _controls.yaw = (static_cast<float>(_channels[YAW]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
+
+    _controlsPWM.throttle = _channels[THROTTLE];
+    _controlsPWM.roll = _channels[ROLL];
+    _controlsPWM.pitch = _channels[PITCH];
+    _controlsPWM.yaw = _channels[YAW];
+
     _packetIsEmpty = false;
     return true;
 }

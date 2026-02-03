@@ -7,17 +7,6 @@ ReceiverSBUS::ReceiverSBUS(SerialPort& serialPort) :
     _auxiliaryChannelCount = CHANNEL_COUNT - STICK_COUNT;
 }
 
-/*!
-Maps channels in range [1000,2000] to floats in range [0,1] for throttle, [-1,1] for roll, pitch yaw
-*/
-void ReceiverSBUS::getStickValues(float& throttleStick, float& rollStick, float& pitchStick, float& yawStick) const
-{
-    throttleStick = (static_cast<float>(_channels[THROTTLE]) - CHANNEL_RANGE_F) / CHANNEL_RANGE_F;
-    rollStick = (static_cast<float>(_channels[ROLL]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
-    pitchStick = (static_cast<float>(_channels[PITCH]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
-    yawStick = (static_cast<float>(_channels[YAW]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
-}
-
 uint16_t ReceiverSBUS::getChannelPWM(size_t index) const
 {
     if (index >= CHANNEL_COUNT) {
@@ -123,6 +112,16 @@ bool ReceiverSBUS::unpackPacket()
     const uint8_t flags = _packet[23];
     _channels[16] = (flags & FLAG_CHANNEL_16) ? CHANNEL_HIGH : CHANNEL_LOW;
     _channels[17] = (flags & FLAG_CHANNEL_17) ? CHANNEL_HIGH : CHANNEL_LOW;
+
+    _controls.throttle = (static_cast<float>(_channels[THROTTLE]) - CHANNEL_RANGE_F) / CHANNEL_RANGE_F;
+    _controls.roll = (static_cast<float>(_channels[ROLL]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
+    _controls.pitch = (static_cast<float>(_channels[PITCH]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
+    _controls.yaw = (static_cast<float>(_channels[YAW]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
+
+    _controlsPWM.throttle = _channels[THROTTLE];
+    _controlsPWM.roll = _channels[ROLL];
+    _controlsPWM.pitch = _channels[PITCH];
+    _controlsPWM.yaw = _channels[YAW];
 
     _packetIsEmpty = false;
     return true;

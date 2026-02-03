@@ -96,19 +96,6 @@ bool ReceiverAtomJoyStick::update(uint32_t tickCountDelta)
     return true;
 }
 
-/*!
-Maps the joystick values as floats in the range [-1, 1].
-
-Called by the receiver task.
-*/
-void ReceiverAtomJoyStick::getStickValues(float& throttle, float& roll, float& pitch, float& yaw) const
-{
-    throttle = _controls.throttle;
-    roll = _controls.roll;
-    pitch = _controls.pitch;
-    yaw = _controls.yaw;
-}
-
 ReceiverBase::EUI_48_t ReceiverAtomJoyStick::getMyEUI() const
 {
     EUI_48_t ret {};
@@ -142,14 +129,13 @@ uint16_t ReceiverAtomJoyStick::getChannelPWM(size_t index) const
     }
     switch (index) {
     case ROLL:
-        return static_cast<uint16_t>(_controls.roll*CHANNEL_RANGE_F + CHANNEL_MIDDLE_F);
+        return _controlsPWM.roll;
     case PITCH:
-        return static_cast<uint16_t>(_controls.pitch*CHANNEL_RANGE_F + CHANNEL_MIDDLE_F);
+        return _controlsPWM.pitch;
     case THROTTLE:
-        return _positiveHalfThrottle ? static_cast<uint16_t>(_controls.throttle*CHANNEL_RANGE_F + CHANNEL_LOW_F)
-                                     : static_cast<uint16_t>(_controls.throttle*CHANNEL_RANGE_F + CHANNEL_MIDDLE_F);
+        return _controlsPWM.throttle;
     case YAW:
-        return static_cast<uint16_t>(_controls.yaw*CHANNEL_RANGE_F + CHANNEL_MIDDLE_F);
+        return _controlsPWM.yaw;
     default:
         return getSwitch(index - STICK_COUNT) ? CHANNEL_HIGH : CHANNEL_LOW;
     }
@@ -263,6 +249,13 @@ bool ReceiverAtomJoyStick::unpackPacket(checkPacket_t checkPacket)
     _mode = _packet[21];  // _mode: stable or sport
     _altMode = _packet[22];
     _proactiveFlag = _packet[23];
+
+    _controlsPWM = controls_pwm_t {
+        .throttle = static_cast<uint16_t>(_positiveHalfThrottle ? (_controls.throttle*CHANNEL_RANGE_F + CHANNEL_LOW_F) : (_controls.throttle * CHANNEL_RANGE_F / 2.0F) + CHANNEL_MIDDLE_F),
+        .roll = static_cast<uint16_t>((_controls.roll * CHANNEL_RANGE_F / 2.0F) + CHANNEL_MIDDLE_F),
+        .pitch = static_cast<uint16_t>((_controls.pitch * CHANNEL_RANGE_F / 2.0F) + CHANNEL_MIDDLE_F),
+        .yaw = static_cast<uint16_t>((_controls.yaw * CHANNEL_RANGE_F /2.0F) + CHANNEL_MIDDLE_F)
+    };
 //NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
     setPacketEmpty();
