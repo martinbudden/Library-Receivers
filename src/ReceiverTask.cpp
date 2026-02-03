@@ -42,10 +42,7 @@ void ReceiverTask::loop()
     _tickCountPrevious = tickCount;
 
     if (_receiver.update(_tickCountDelta)) {
-        CockpitBase::controls_t controls; // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
-        controls.tickCount = tickCount;
-        _receiver.getStickValues(controls.throttleStick, controls.rollStick, controls.pitchStick, controls.yawStick);
-        _cockpit.updateControls(controls);
+        _cockpit.updateControls(tickCount, _receiver);
         // if there a watcher, then let it know there is a new packet
         if (_receiverWatcher) {
             _receiverWatcher->newReceiverPacketAvailable();
