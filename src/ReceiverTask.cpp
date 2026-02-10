@@ -21,8 +21,7 @@
 ReceiverTask::ReceiverTask(uint32_t taskIntervalMicroseconds, ReceiverBase& receiver, CockpitBase& cockpit) :
     TaskBase(taskIntervalMicroseconds),
     _receiver(receiver),
-    _cockpit(cockpit),
-    _receiverWatcher(receiver.getReceiverWatcher())
+    _cockpit(cockpit)
 {
 }
 
@@ -42,13 +41,9 @@ void ReceiverTask::loop()
     _tickCountPrevious = tickCount;
 
     if (_receiver.update(_tickCountDelta)) {
-        _cockpit.updateControls(tickCount, _receiver);
-        // if there a watcher, then let it know there is a new packet
-        if (_receiverWatcher) {
-            _receiverWatcher->newReceiverPacketAvailable();
-        }
+        _cockpit.update_controls(tickCount, _receiver);
     } else {
-        _cockpit.checkFailsafe(tickCount);
+        _cockpit.check_failsafe(tickCount);
     }
 }
 
@@ -62,13 +57,13 @@ Task function for the ReceiverTask. Sets up and runs the task loop() function.
     // BaseType_t is int, TickType_t is uint32_t
     if (_taskIntervalMicroseconds == 0) {
         // event driven scheduling
-        const uint32_t ticksToWait = _cockpit.getTimeoutTicks();
+        const uint32_t ticksToWait = _cockpit.get_timeout_ticks();
         while (true) {
             if (_receiver.WAIT_FOR_DATA_RECEIVED(ticksToWait) == pdPASS) {
                 loop();
             } else {
                 // WAIT timed out, so check failsafe
-                _cockpit.checkFailsafe(xTaskGetTickCount());
+                _cockpit.check_failsafe(xTaskGetTickCount());
             }
         }
     } else {
@@ -86,10 +81,10 @@ Task function for the ReceiverTask. Sets up and runs the task loop() function.
 #else
             vTaskDelayUntil(&_previousWakeTimeTicks, taskIntervalTicks);
 #endif
-            while (_receiver.isDataAvailable()) {
+            while (_receiver.is_data_available()) {
                 // Read 1 byte from UART buffer and give it to the RX protocol parser
-                if (_receiver.onDataReceivedFromISR(_receiver.readByte())) {
-                    // onDataReceived returns true once packet is complete
+                if (_receiver.on_data_received_from_isr(_receiver.read_byte())) {
+                    // on_data_received returns true once packet is complete
                     break;
                 }
             }

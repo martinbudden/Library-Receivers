@@ -1,13 +1,13 @@
 #include "ReceiverCRSF.h"
 
 
-ReceiverCRSF::ReceiverCRSF(SerialPort& serialPort) :
+ReceiverCrsf::ReceiverCrsf(SerialPort& serialPort) :
     ReceiverSerial(serialPort)
 {
-    _auxiliaryChannelCount = CHANNEL_COUNT - STICK_COUNT;
+    _auxiliary_channel_count = CHANNEL_COUNT - STICK_COUNT;
 }
 
-uint16_t ReceiverCRSF::getChannelPWM(size_t index) const
+uint16_t ReceiverCrsf::get_channel_pwm(size_t index) const
 {
     if (index >= CHANNEL_COUNT) {
         return CHANNEL_LOW;
@@ -31,42 +31,43 @@ uint16_t ReceiverCRSF::getChannelPWM(size_t index) const
 /*!
 Called from within ReceiverSerial ISR.
 */
-bool ReceiverCRSF::onDataReceivedFromISR(uint8_t data)
+bool ReceiverCrsf::on_data_received_from_isr(uint8_t data)
 {
     const timeUs32_t timeNowUs = timeUs();
-    if (timeNowUs > _startTime + TIME_NEEDED_PER_FRAME_US) { // cppcheck-suppress unsignedLessThanZero
-        _packetIndex = 0;
-        ++_droppedPacketCount;
+    if (timeNowUs > _start_time + TIME_NEEDED_PER_FRAME_US) { // cppcheck-suppress unsignedLessThanZero
+        _packet_index = 0;
+        ++_dropped_packet_count;
     }
 
-    switch (_packetIndex) {
+    switch (_packet_index) {
     case 0:
         if (data != CRSF_SYNC_BYTE && data != EDGE_TX_SYNC_BYTE) {
-            _packetIsEmpty = true;
+            _packet_is_empty = true;
             return false;
         }
-        _startTime = timeNowUs;
+        _start_time = timeNowUs;
         break;
     case 1:
         _packetSize = data + 2;
         break;
     case 2:
-        _packetType = data;
+        _packet_type = data;
         break;
     }
 
-    _packetISR.data[_packetIndex++] = data;
+    _packet_isr.data[_packet_index] = data;
+    ++_packet_index;
 
-    if (_packetSize != 0 && _packetIndex == _packetSize) {
-        _packetIndex = 0;
+    if (_packetSize != 0 && _packet_index == _packetSize) {
+        _packet_index = 0;
         _packetSize = 0;
-        _packet = _packetISR;
+        _packet = _packet_isr;
         return true;
     }
     return false;
 }
 
-uint8_t ReceiverCRSF::calculateCRC(uint8_t crc, uint8_t value)
+uint8_t ReceiverCrsf::calculate_crc(uint8_t crc, uint8_t value)
 {
     static constexpr uint8_t POLYNOMIAL = 0xD5;
 
@@ -81,16 +82,16 @@ uint8_t ReceiverCRSF::calculateCRC(uint8_t crc, uint8_t value)
     return crc;
 }
 
-uint8_t ReceiverCRSF::calculateCRC() const
+uint8_t ReceiverCrsf::calculate_crc() const
 {
-    uint8_t crc = calculateCRC(0, _packet.value.type);
+    uint8_t crc = calculate_crc(0, _packet.value.type);
     for (size_t ii = 2; ii < _packet.value.length; ++ii) { // length is length of type, payload, and CRC
-        crc = calculateCRC(crc, _packet.value.payload[ii - 2]);
+        crc = calculate_crc(crc, _packet.value.payload[ii - 2]);
     }
     return crc;
 }
 
-uint8_t ReceiverCRSF::getReceivedCRC() const
+uint8_t ReceiverCrsf::get_received_crc() const
 {
     return _packet.value.payload[_packet.value.length - 2];
 }
@@ -101,10 +102,10 @@ If the packet is valid then unpack it into the member data and set the packet to
 Returns true if a valid packet received, false otherwise.
 
 */
-bool ReceiverCRSF::unpackPacket()
+bool ReceiverCrsf::unpack_packet()
 {
-    if (calculateCRC() != getReceivedCRC()) {
-        _packetIsEmpty = true;
+    if (calculate_crc() != get_received_crc()) {
+        _packet_is_empty = true;
         return false;
     }
 
@@ -150,7 +151,7 @@ bool ReceiverCRSF::unpackPacket()
         _channels[14] = rcChannels->chan14;
         _channels[15] = rcChannels->chan15;
 #endif
-        _packetIsEmpty = false;
+        _packet_is_empty = false;
         return true;
     }
 // Map channels in range [1000,2000] to floats in range [0,1] for throttle, [-1,1] for roll, pitch yaw
@@ -159,11 +160,11 @@ bool ReceiverCRSF::unpackPacket()
     _controls.pitch = (static_cast<float>(_channels[PITCH]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
     _controls.yaw = (static_cast<float>(_channels[YAW]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
 
-    _controlsPWM.throttle = _channels[THROTTLE];
-    _controlsPWM.roll = _channels[ROLL];
-    _controlsPWM.pitch = _channels[PITCH];
-    _controlsPWM.yaw = _channels[YAW];
+    _controls_pwm.throttle = _channels[THROTTLE];
+    _controls_pwm.roll = _channels[ROLL];
+    _controls_pwm.pitch = _channels[PITCH];
+    _controls_pwm.yaw = _channels[YAW];
 
-    _packetIsEmpty = true;
+    _packet_is_empty = true;
     return false;
 }

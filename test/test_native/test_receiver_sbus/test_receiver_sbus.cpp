@@ -13,11 +13,11 @@ void tearDown()
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,misc-const-correctness,readability-convert-member-functions-to-static,readability-magic-numbers)
 void test_receiver_sbus()
 {
-    static SerialPort serialPort(SerialPort::uart_pins_t{}, 0, 0, ReceiverSBUS::DATA_BITS, ReceiverSBUS::STOP_BITS, ReceiverSBUS::PARITY);
-    static ReceiverSBUS receiver(serialPort);
+    static SerialPort serialPort(SerialPort::uart_pins_t{}, 0, 0, ReceiverSbus::DATA_BITS, ReceiverSbus::STOP_BITS, ReceiverSbus::PARITY);
+    static ReceiverSbus receiver(serialPort);
 
-    receiver.setPacketEmpty();
-    TEST_ASSERT_TRUE(receiver.isPacketEmpty());
+    receiver.set_packet_empty();
+    TEST_ASSERT_TRUE(receiver.is_packet_empty());
 }
 
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,misc-const-correctness,readability-convert-member-functions-to-static,readability-magic-numbers)

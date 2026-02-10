@@ -92,7 +92,7 @@ void test_float_convert()
     TEST_ASSERT_EQUAL(-119, float32ToInt24(-119.0F));
 }
 
-int32_t float32_to_Q12dot4(float x)
+int32_t float32_to_q12dot4(float x)
 {
     const union { // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
         float f;
@@ -111,7 +111,7 @@ int32_t float32_to_Q12dot4(float x)
     return sign ? -i : i;
 }
 
-int32_t ubyte4float_to_Q12dot4(const uint8_t f[4]) // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+int32_t ubyte4float_to_q12dot4(const uint8_t f[4]) // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 {
     /*union {
         uint8_t b[4];
@@ -139,35 +139,35 @@ int32_t ubyte4float_to_Q12dot4(const uint8_t f[4]) // NOLINT(cppcoreguidelines-a
     return sign ? -i : i;
 }
 
-float Q12dot4_to_float32(int16_t a)
+float q12dot4_to_float32(int16_t a)
 {
     return static_cast<float>(a) / 2048.0F;
 }
 
 void test_fixed_convert()
 {
-    TEST_ASSERT_EQUAL(4096, float32_to_Q12dot4(2.0F));
-    TEST_ASSERT_EQUAL(-4096, float32_to_Q12dot4(-2.0F));
+    TEST_ASSERT_EQUAL(4096, float32_to_q12dot4(2.0F));
+    TEST_ASSERT_EQUAL(-4096, float32_to_q12dot4(-2.0F));
 
     const float x = 0.48F;
-    const auto a = static_cast<int16_t>(float32_to_Q12dot4(x));
+    const auto a = static_cast<int16_t>(float32_to_q12dot4(x));
     TEST_ASSERT_EQUAL(floor(0.48*2048), a);
-    const float y = Q12dot4_to_float32(a);
+    const float y = q12dot4_to_float32(a);
     TEST_ASSERT_FLOAT_WITHIN(0.00008F*x, x, y);
 
-    TEST_ASSERT_EQUAL(2048, float32_to_Q12dot4(1.0F));
-    TEST_ASSERT_EQUAL(-2048, float32_to_Q12dot4(-1.0F));
+    TEST_ASSERT_EQUAL(2048, float32_to_q12dot4(1.0F));
+    TEST_ASSERT_EQUAL(-2048, float32_to_q12dot4(-1.0F));
 
-    TEST_ASSERT_EQUAL(1024, float32_to_Q12dot4(0.5F));
-    TEST_ASSERT_EQUAL(-1024, float32_to_Q12dot4(-0.5F));
+    TEST_ASSERT_EQUAL(1024, float32_to_q12dot4(0.5F));
+    TEST_ASSERT_EQUAL(-1024, float32_to_q12dot4(-0.5F));
 
-    TEST_ASSERT_EQUAL(512, float32_to_Q12dot4(0.25F));
-    TEST_ASSERT_EQUAL(-512, float32_to_Q12dot4(-0.25F));
+    TEST_ASSERT_EQUAL(512, float32_to_q12dot4(0.25F));
+    TEST_ASSERT_EQUAL(-512, float32_to_q12dot4(-0.25F));
 
-    TEST_ASSERT_EQUAL(4096, float32_to_Q12dot4(2.0F));
-    TEST_ASSERT_EQUAL(8192, float32_to_Q12dot4(4.0F));
-    TEST_ASSERT_EQUAL(16384, float32_to_Q12dot4(8.0F));
-    TEST_ASSERT_EQUAL(32768, float32_to_Q12dot4(16.0F));
+    TEST_ASSERT_EQUAL(4096, float32_to_q12dot4(2.0F));
+    TEST_ASSERT_EQUAL(8192, float32_to_q12dot4(4.0F));
+    TEST_ASSERT_EQUAL(16384, float32_to_q12dot4(8.0F));
+    TEST_ASSERT_EQUAL(32768, float32_to_q12dot4(16.0F));
 
 }
 
@@ -183,10 +183,10 @@ void test_byte_convert()
 
 
     x.f = 0.48F; // NOLINT(cppcoreguidelines-pro-type-union-access)
-    const auto a = static_cast<int16_t>(ubyte4float_to_Q12dot4(&x.b[0]));
+    const auto a = static_cast<int16_t>(ubyte4float_to_q12dot4(&x.b[0]));
     TEST_ASSERT_EQUAL(floor(0.48*2048), a);
 
-    const float y = Q12dot4_to_float32(a);
+    const float y = q12dot4_to_float32(a);
     TEST_ASSERT_FLOAT_WITHIN(0.00008F*x.f, x.f, y);
 }
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers,cppcoreguidelines-pro-type-union-access,hicpp-use-auto,modernize-use-auto)

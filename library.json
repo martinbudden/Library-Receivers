@@ -20,5 +20,5 @@
     "version": "0.0.1",
     "frameworks": "*",
     "platforms": "*",
-    "headers": [ "ESPNOW_Transceiver.h", "CockpitBase.h", "ReceiverAtomJoyStick.h", "ReceiverBase.h", "ReceiverSBUS.h", "ReceiverSerial.h", "ReceiverTask.h", "ReceiverTelemetry.h", "ReceiverTelemetryData.h", "ReceiverVirtual.h", "SerialPort.h" ]
+    "headers": [ "EspnowTransceiver.h", "CockpitBase.h", "ReceiverAtomJoyStick.h", "ReceiverBase.h", "ReceiverSbus.h", "ReceiverSerial.h", "ReceiverTask.h", "ReceiverTelemetry.h", "ReceiverTelemetryData.h", "ReceiverVirtual.h", "SerialPort.h" ]
 }

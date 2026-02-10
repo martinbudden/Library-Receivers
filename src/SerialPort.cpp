@@ -21,14 +21,14 @@ SerialPort* SerialPort::self;
 
 
 #if defined(FRAMEWORK_RPI_PICO) || defined(FRAMEWORK_ARDUINO_RPI_PICO)
-void __not_in_flash_func(SerialPort::dataReadyISR)() // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
+void __not_in_flash_func(SerialPort::data_ready_isr)() // NOLINT(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 {
     //gpio_put(PICO_DEFAULT_LED_PIN, 1);
     while (uart_is_readable(self->_uart)) {
         // Read 1 byte from UART buffer and give it to the RX protocol parser
         const uint8_t data = uart_getc(self->_uart);
-        if (self->onDataReceivedFromISR(data)) {
-            // onDataReceived returns true once packet is complete
+        if (self->on_data_received_from_isr(data)) {
+            // on_data_received returns true once packet is complete
             self->SIGNAL_DATA_READY_FROM_ISR();
         }
     }
@@ -38,23 +38,23 @@ void __not_in_flash_func(SerialPort::dataReadyISR)() // NOLINT(bugprone-reserved
 #if false
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // cppcheck-suppress constParameterPointer
 {
-    SerialPort::dataReadyISR(huart);
+    SerialPort::data_ready_isr(huart);
 }
 #endif
 
-FAST_CODE void SerialPort::dataReadyISR(const UART_HandleTypeDef *huart) // NOLINT(readability-convert-member-functions-to-static)
+FAST_CODE void SerialPort::data_ready_isr(const UART_HandleTypeDef *huart) // NOLINT(readability-convert-member-functions-to-static)
 {
     if (huart->Instance == self->_uart.Instance) {
-        if (self->onDataReceivedFromISR(self->_rxByte)) {
-            // onDataReceived returns true once packet is complete
+        if (self->on_data_received_from_isr(self->_rx_byte)) {
+            // on_data_received returns true once packet is complete
             self->SIGNAL_DATA_READY_FROM_ISR();
         }
         // Re-enable the interrupt for the next byte
-        HAL_UART_Receive_IT(&self->_uart, &self->_rxByte, 1);
+        HAL_UART_Receive_IT(&self->_uart, &self->_rx_byte, 1);
     }
 }
 #else
-FAST_CODE void SerialPort::dataReadyISR()
+FAST_CODE void SerialPort::data_ready_isr()
 {
     self->SIGNAL_DATA_READY_FROM_ISR();
 }
@@ -63,30 +63,30 @@ FAST_CODE void SerialPort::dataReadyISR()
 /*!
 Negative pin means it is inverted.
 */
-SerialPort::SerialPort(SerialPortWatcherBase* watcher, const serial_pins_t& pins, uint8_t uartIndex, uint32_t baudrate, uint8_t dataBits, uint8_t stopBits, uint8_t parity) : // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+SerialPort::SerialPort(SerialPortWatcherBase* watcher, const serial_pins_t& pins, uint8_t uart_index, uint32_t baudrate, uint8_t data_bits, uint8_t stop_bits, uint8_t parity) : // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
     _watcher(watcher),
     _pins({
         .rx = { .port = pins.rx.port, .pin = static_cast<int8_t>(pins.rx.pin < 0 ? -pins.rx.pin : pins.rx.pin), .inverted = pins.rx.pin < 0 },
         .tx = { .port = pins.tx.port, .pin = static_cast<int8_t>(pins.tx.pin < 0 ? -pins.tx.pin : pins.tx.pin), .inverted = pins.tx.pin < 0 }
     }),
-    _uartIndex(uartIndex),
-    _dataBits(dataBits),
-    _stopBits(stopBits),
+    _uart_index(uart_index),
+    _data_bits(data_bits),
+    _stop_bits(stop_bits),
     _parity(parity),
     _baudrate(baudrate)
 #if defined(FRAMEWORK_ARDUINO_ESP32)
-    ,_uart(uartIndex)
+    ,_uart(uart_index)
 #endif
 {
 }
 
-SerialPort::SerialPort(const stm32_uart_pins_t& pins, uint8_t uartIndex, uint32_t baudrate, uint8_t dataBits, uint8_t stopBits, uint8_t parity) :
-    SerialPort(nullptr, serial_pins_t{{pins.tx.port,pins.tx.pin,false},{pins.rx.port,pins.rx.pin,false}}, uartIndex, baudrate, dataBits, stopBits, parity)
+SerialPort::SerialPort(const stm32_uart_pins_t& pins, uint8_t uart_index, uint32_t baudrate, uint8_t data_bits, uint8_t stop_bits, uint8_t parity) :
+    SerialPort(nullptr, serial_pins_t{{pins.tx.port,pins.tx.pin,false},{pins.rx.port,pins.rx.pin,false}}, uart_index, baudrate, data_bits, stop_bits, parity)
 {
 }
 
-SerialPort::SerialPort(const uart_pins_t& pins, uint8_t uartIndex, uint32_t baudrate, uint8_t dataBits, uint8_t stopBits, uint8_t parity) :
-    SerialPort(nullptr, serial_pins_t{{0,pins.tx,false},{0,pins.rx,false}}, uartIndex, baudrate, dataBits, stopBits, parity)
+SerialPort::SerialPort(const uart_pins_t& pins, uint8_t uart_index, uint32_t baudrate, uint8_t data_bits, uint8_t stop_bits, uint8_t parity) :
+    SerialPort(nullptr, serial_pins_t{{0,pins.tx,false},{0,pins.rx,false}}, uart_index, baudrate, data_bits, stop_bits, parity)
 {
 }
 
@@ -94,7 +94,7 @@ void SerialPort::init() // NOLINT(readability-make-member-function-const)
 {
 #if defined(FRAMEWORK_RPI_PICO) || defined(FRAMEWORK_ARDUINO_RPI_PICO)
     // see https://github.com/victorhook/asac-fc/blob/main/src/receiver.c
-    _uart = uart_get_instance(_uartIndex);
+    _uart = uart_get_instance(_uart_index);
 
     uart_init(_uart, _baudrate);
     gpio_set_function(_pins.rx.pin, GPIO_FUNC_UART);
@@ -106,13 +106,13 @@ void SerialPort::init() // NOLINT(readability-make-member-function-const)
     const uart_parity_t parity =
         (_parity == PARITY_NONE) ? UART_PARITY_NONE :
         (_parity == PARITY_EVEN) ? UART_PARITY_EVEN : UART_PARITY_ODD;
-    uart_set_format(_uart, _dataBits, _stopBits, parity);
+    uart_set_format(_uart, _data_bits, _stop_bits, parity);
 
     uart_set_fifo_enabled(_uart, true);
 
     // Enable UART interrupt
-    const irq_num_t irqNum = _uartIndex == 0 ? UART0_IRQ : UART1_IRQ;
-    irq_set_exclusive_handler(irqNum, dataReadyISR);
+    const irq_num_t irqNum = _uart_index == 0 ? UART0_IRQ : UART1_IRQ;
+    irq_set_exclusive_handler(irqNum, data_ready_isr);
     irq_set_enabled(irqNum, true);
     enum { RX_NEEDS_DATA = true, RX_DOES_NOT_NEED_DATA = false };
     enum { TX_NEEDS_DATA = true, TX_DOES_NOT_NEED_DATA = false };
@@ -167,13 +167,13 @@ void SerialPort::init() // NOLINT(readability-make-member-function-const)
     uint32_t alternate {}; // NOLINT(misc-const-correctness)
 #endif
     // STM32 indices are 1-based
-    if (_uartIndex == 0) {
+    if (_uart_index == 0) {
         __HAL_RCC_USART1_CLK_ENABLE();
         _uart.Instance = USART1;
 #if !defined(FRAMEWORK_STM32_CUBE_F1)
         alternate = GPIO_AF7_USART1;
 #endif
-    } else if (_uartIndex == 1) {
+    } else if (_uart_index == 1) {
 #if defined(USART2)
         __HAL_RCC_USART2_CLK_ENABLE();
         _uart.Instance = USART2;
@@ -181,7 +181,7 @@ void SerialPort::init() // NOLINT(readability-make-member-function-const)
         alternate = GPIO_AF7_USART2;
 #endif
 #endif
-    } else if (_uartIndex == 2) {
+    } else if (_uart_index == 2) {
 #if defined(USART3)
         __HAL_RCC_USART3_CLK_ENABLE();
         _uart.Instance = USART3;
@@ -189,7 +189,7 @@ void SerialPort::init() // NOLINT(readability-make-member-function-const)
         alternate = GPIO_AF7_USART3;
 #endif
 #endif
-    } else if (_uartIndex == 3) {
+    } else if (_uart_index == 3) {
 #if defined(UART4)
         __HAL_RCC_UART4_CLK_ENABLE();
         _uart.Instance = UART4;
@@ -199,7 +199,7 @@ void SerialPort::init() // NOLINT(readability-make-member-function-const)
         alternate = GPIO_AF8_UART4;
 #endif
 #endif
-    } else if (_uartIndex == 4) {
+    } else if (_uart_index == 4) {
 #if defined(UART5)
         __HAL_RCC_UART5_CLK_ENABLE();
         _uart.Instance = UART5;
@@ -209,7 +209,7 @@ void SerialPort::init() // NOLINT(readability-make-member-function-const)
         alternate = GPIO_AF8_UART5;
 #endif
 #endif
-    } else if (_uartIndex == 5) { // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+    } else if (_uart_index == 5) { // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 #if defined(USART6)
         __HAL_RCC_USART6_CLK_ENABLE();
         _uart.Instance = USART6;
@@ -236,7 +236,7 @@ void SerialPort::init() // NOLINT(readability-make-member-function-const)
     uartInit();
 
     // Enable UART interrupt, calls back HAL_UART_RxCpltCallback when data received
-    HAL_UART_Receive_IT(&_uart, &_rxByte, 1);
+    HAL_UART_Receive_IT(&_uart, &_rx_byte, 1);
 
 
 #elif defined(FRAMEWORK_TEST)
@@ -282,7 +282,7 @@ int32_t SerialPort::WAIT_FOR_DATA_RECEIVED(uint32_t ticksToWait) // NOLINT(reada
     return WAIT_DATA_READY(ticksToWait);
 }
 
-bool SerialPort::isDataAvailable() const
+bool SerialPort::is_data_available() const
 {
 #if defined(FRAMEWORK_RPI_PICO) || defined(FRAMEWORK_ARDUINO_RPI_PICO)
     return uart_is_readable(_uart);
@@ -304,7 +304,7 @@ bool SerialPort::isDataAvailable() const
 /*!
 Used to get received byte when using time-based scheduling.
 */
-uint8_t SerialPort::readByte()
+uint8_t SerialPort::read_byte()
 {
 #if defined(FRAMEWORK_RPI_PICO) || defined(FRAMEWORK_ARDUINO_RPI_PICO)
     return uart_getc(_uart);
@@ -329,7 +329,7 @@ uint8_t SerialPort::readByte()
 #endif
 }
 
-size_t SerialPort::availableForWrite()
+size_t SerialPort::available_for_write()
 {
 #if defined(FRAMEWORK_RPI_PICO)
     return uart_is_writable(_uart);
@@ -343,12 +343,12 @@ size_t SerialPort::availableForWrite()
 #if defined(FRAMEWORK_ARDUINO_ESP32)
     return _uart.availableForWrite();
 #else
-    return Serial.availableForWrite();
+    return Serial.available_for_write();
 #endif
 #endif
 }
 
-void SerialPort::writeByte(uint8_t data)
+void SerialPort::write_byte(uint8_t data)
 {
 #if defined(FRAMEWORK_RPI_PICO)
     uart_putc_raw(_uart, data);
@@ -392,12 +392,12 @@ size_t SerialPort::write(const uint8_t* buf, size_t len)
 #endif
 }
 
-bool SerialPort::onDataReceivedFromISR(uint8_t data)
+bool SerialPort::on_data_received_from_isr(uint8_t data)
 {
-    return _watcher ? _watcher->onDataReceivedFromISR(data) : true;
+    return _watcher ? _watcher->on_data_received_from_isr(data) : true;
 }
 
-uint32_t SerialPort::setBaudrate(uint32_t baudrate)
+uint32_t SerialPort::set_baudrate(uint32_t baudrate)
 {
     _baudrate = baudrate;
 #if defined(FRAMEWORK_RPI_PICO)

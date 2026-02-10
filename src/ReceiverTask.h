@@ -4,7 +4,7 @@
 
 class CockpitBase;
 class ReceiverBase;
-class ReceiverWatcher;
+
 
 class ReceiverTask : public TaskBase {
 public:
@@ -22,5 +22,4 @@ private:
 private:
     ReceiverBase& _receiver;
     CockpitBase& _cockpit;
-    ReceiverWatcher* _receiverWatcher;
 };

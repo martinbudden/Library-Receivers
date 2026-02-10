@@ -61,35 +61,51 @@
 class SerialPortWatcherBase {
 public:
     virtual ~SerialPortWatcherBase() = default;
-    virtual bool onDataReceivedFromISR(uint8_t data) = 0;
+    virtual bool on_data_received_from_isr(uint8_t data) = 0;
 };
 
 
 class SerialPort {
 public:
-    enum uart_index_e : uint8_t { UART_INDEX_0, UART_INDEX_1, UART_INDEX_2, UART_INDEX_3, UART_INDEX_4, UART_INDEX_5, UART_INDEX_6, UART_INDEX_7 };
-    enum parity_e { PARITY_NONE, PARITY_EVEN, PARITY_ODD };
-    enum stop_bits_e { STOP_BITS_1 = 1, STOP_BITS_2 = 2 };
-    enum data_bits_e { DATA_BITS_5 = 5, DATA_BITS_6 = 6, DATA_BITS_7 = 7, DATA_BITS_8 = 8, DATA_BITS_9 = 9};
-    enum baudrate_e {
-        BAUDRATE_AUTO = 0,
-        BAUDRATE_9600,
-        BAUDRATE_19200,
-        BAUDRATE_38400,
-        BAUDRATE_57600,
-        BAUDRATE_115200,
-        BAUDRATE_230400,
-        BAUDRATE_250000,
-        BAUDRATE_400000,
-        BAUDRATE_460800,
-        BAUDRATE_500000,
-        BAUDRATE_921600,
-        BAUDRATE_1000000,
-        BAUDRATE_1500000,
-        BAUDRATE_2000000,
-        BAUDRATE_2470000,
-        BAUDRATE_COUNT
-    };
+    static constexpr uint8_t UART_INDEX_0 = 0;
+    static constexpr uint8_t UART_INDEX_1 = 1;
+    static constexpr uint8_t UART_INDEX_2 = 2;
+    static constexpr uint8_t UART_INDEX_3 =3;
+    static constexpr uint8_t UART_INDEX_4 = 4;
+    static constexpr uint8_t UART_INDEX_5 = 5;
+    static constexpr uint8_t UART_INDEX_6 = 6;
+    static constexpr uint8_t UART_INDEX_7 =7;
+
+    static constexpr uint8_t PARITY_NONE = 0;
+    static constexpr uint8_t PARITY_EVEN = 1;
+    static constexpr uint8_t PARITY_ODD = 2;
+
+    static constexpr uint8_t STOP_BITS_1 = 1;
+    static constexpr uint8_t STOP_BITS_2 = 2;
+
+    static constexpr uint8_t DATA_BITS_5 = 5;
+    static constexpr uint8_t DATA_BITS_6 = 6;
+    static constexpr uint8_t DATA_BITS_7 = 7; 
+    static constexpr uint8_t DATA_BITS_8 = 8;
+    static constexpr uint8_t DATA_BITS_9 = 9;
+
+    static constexpr uint8_t BAUDRATE_AUTO = 0;
+    static constexpr uint8_t BAUDRATE_9600 = 1;
+    static constexpr uint8_t BAUDRATE_19200 = 2;
+    static constexpr uint8_t BAUDRATE_38400 = 3;
+    static constexpr uint8_t BAUDRATE_57600 = 4;
+    static constexpr uint8_t BAUDRATE_115200 = 5;
+    static constexpr uint8_t BAUDRATE_230400 = 6;
+    static constexpr uint8_t BAUDRATE_250000 = 7;
+    static constexpr uint8_t BAUDRATE_400000 = 8;
+    static constexpr uint8_t BAUDRATE_460800 = 9;
+    static constexpr uint8_t BAUDRATE_500000 = 10;
+    static constexpr uint8_t BAUDRATE_921600 = 11;
+    static constexpr uint8_t BAUDRATE_1000000 = 12;
+    static constexpr uint8_t BAUDRATE_1500000 = 13;
+    static constexpr uint8_t BAUDRATE_2000000 = 14;
+    static constexpr uint8_t BAUDRATE_2470000 = 15;
+    static constexpr uint8_t BAUDRATE_COUNT = 16;
 public:
     // negative pin means it is inverted
     struct port_pin_t {
@@ -114,9 +130,9 @@ public:
         port_pin_t tx;
     };
 public:
-    SerialPort(const stm32_uart_pins_t& pins, uint8_t uartIndex, uint32_t baudrate, uint8_t dataBits, uint8_t stopBits, uint8_t parity);
-    SerialPort(const uart_pins_t& pins, uint8_t uartIndex, uint32_t baudrate, uint8_t dataBits, uint8_t stopBits, uint8_t parity);
-    SerialPort(SerialPortWatcherBase* watcher, const serial_pins_t& pins, uint8_t uartIndex, uint32_t baudrate, uint8_t dataBits, uint8_t stopBits, uint8_t parity);
+    SerialPort(const stm32_uart_pins_t& pins, uint8_t uart_index, uint32_t baudrate, uint8_t data_bits, uint8_t stop_bits, uint8_t parity);
+    SerialPort(const uart_pins_t& pins, uint8_t uart_index, uint32_t baudrate, uint8_t data_bits, uint8_t stop_bits, uint8_t parity);
+    SerialPort(SerialPortWatcherBase* watcher, const serial_pins_t& pins, uint8_t uart_index, uint32_t baudrate, uint8_t data_bits, uint8_t stop_bits, uint8_t parity);
     void init();
     void uartInit();
 private:
@@ -127,25 +143,25 @@ private:
     SerialPort& operator=(SerialPort&&) = delete;
 public:
     int32_t WAIT_FOR_DATA_RECEIVED(uint32_t ticksToWait);
-    bool onDataReceivedFromISR(uint8_t data);
-    bool isDataAvailable() const;
-    uint8_t readByte();
-    size_t availableForWrite();
-    void writeByte(uint8_t data);
+    bool on_data_received_from_isr(uint8_t data);
+    bool is_data_available() const;
+    uint8_t read_byte();
+    size_t available_for_write();
+    void write_byte(uint8_t data);
     size_t write(const uint8_t* buf, size_t len);
-    uint32_t setBaudrate(uint32_t baudrate);
+    uint32_t set_baudrate(uint32_t baudrate);
 public:
-    static void dataReadyISR();
+    static void data_ready_isr();
 #if defined(FRAMEWORK_STM32_CUBE) || defined(FRAMEWORK_ARDUINO_STM32)
-    static void dataReadyISR(const UART_HandleTypeDef *huart);
+    static void data_ready_isr(const UART_HandleTypeDef *huart);
 #endif
 private:
     static SerialPort* self; //!< alias of `this` to be used in Interrupt Service Routine
     SerialPortWatcherBase* _watcher {nullptr};
     const serial_pins_t _pins {};
-    const uint8_t _uartIndex;
-    const uint8_t _dataBits;
-    const uint8_t _stopBits;
+    const uint8_t _uart_index;
+    const uint8_t _data_bits;
+    const uint8_t _stop_bits;
     const uint8_t _parity;
     uint32_t _baudrate;
 #if defined(FRAMEWORK_RPI_PICO) || defined(FRAMEWORK_ARDUINO_RPI_PICO)
@@ -153,7 +169,7 @@ private:
 #elif defined(FRAMEWORK_ESPIDF)
 #elif defined(FRAMEWORK_STM32_CUBE) || defined(FRAMEWORK_ARDUINO_STM32)
     UART_HandleTypeDef _uart {};
-    uint8_t _rxByte {};
+    uint8_t _rx_byte {};
 #elif defined(FRAMEWORK_TEST)
 #else // defaults to FRAMEWORK_ARDUINO
 #if defined(FRAMEWORK_ARDUINO_ESP32)
@@ -163,18 +179,18 @@ private:
 
 #if defined(FRAMEWORK_USE_FREERTOS)
 
-    uint32_t _dataReadyQueueItem {};
-    BaseType_t _dataReadyQueueHigherPriorityTaskWoken = pdFALSE;
+    uint32_t _data_ready_queue_item {};
+    BaseType_t _data_ready_queue_higher_priority_task_woken = pdFALSE;
     enum { DATA_READY_QUEUE_LENGTH = 1 };
-    std::array<uint8_t, DATA_READY_QUEUE_LENGTH * sizeof(_dataReadyQueueItem)> _dataReadyQueueStorageArea {};
-    StaticQueue_t _dataReadyQueueStatic {};
-    QueueHandle_t _dataReadyQueue {};
+    std::array<uint8_t, DATA_READY_QUEUE_LENGTH * sizeof(_data_ready_queue_item)> _data_ready_queue_storage_area {};
+    StaticQueue_t _data_ready_queueStatic {};
+    QueueHandle_t _data_ready_queue {};
 public:
-    inline int32_t WAIT_DATA_READY(uint32_t ticksToWait) { return xQueueReceive(_dataReadyQueue, &_dataReadyQueueItem, ticksToWait); } // returns pdPASS(1) if queue read, pdFAIL(0) if timeout
+    inline int32_t WAIT_DATA_READY(uint32_t ticksToWait) { return xQueueReceive(_data_ready_queue, &_data_ready_queue_item, ticksToWait); } // returns pdPASS(1) if queue read, pdFAIL(0) if timeout
     inline void SIGNAL_DATA_READY_FROM_ISR() {
-        _dataReadyQueueHigherPriorityTaskWoken = pdFALSE;
-        xQueueOverwriteFromISR(_dataReadyQueue, &_dataReadyQueueItem, &_dataReadyQueueHigherPriorityTaskWoken); 
-        portYIELD_FROM_ISR(_dataReadyQueueHigherPriorityTaskWoken); // cppcheck-suppress cstyleCast
+        _data_ready_queue_higher_priority_task_woken = pdFALSE;
+        xQueueOverwriteFromISR(_data_ready_queue, &_data_ready_queue_item, &_data_ready_queue_higher_priority_task_woken); 
+        portYIELD_FROM_ISR(_data_ready_queue_higher_priority_task_woken); // cppcheck-suppress cstyleCast
     }
 #else
 

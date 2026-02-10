@@ -3,7 +3,7 @@
 
 ReceiverVirtual::ReceiverVirtual()
 {
-    _auxiliaryChannelCount = static_cast<uint32_t>(CHANNEL_COUNT) - static_cast<uint32_t>(STICK_COUNT);
+    _auxiliary_channel_count = static_cast<uint32_t>(CHANNEL_COUNT) - static_cast<uint32_t>(STICK_COUNT);
 }
 
 int32_t ReceiverVirtual::WAIT_FOR_DATA_RECEIVED(uint32_t ticksToWait)
@@ -17,43 +17,43 @@ If a packet was received then unpack it and inform the motor controller there ar
 
 Returns true if a packet has been received.
 */
-bool ReceiverVirtual::update(uint32_t tickCountDelta)
+bool ReceiverVirtual::update(uint32_t tick_count_delta)
 {
-    (void)tickCountDelta;
+    (void)tick_count_delta;
 
-    ++_packetCount;
-    _droppedPacketCount = static_cast<int32_t>(_receivedPacketCount) - _packetCount;
-    _droppedPacketCountDelta = _droppedPacketCount - _droppedPacketCountPrevious;
-    _droppedPacketCountPrevious = _droppedPacketCount;
+    ++_packet_count;
+    _dropped_packet_count = static_cast<int32_t>(_received_packet_count) - _packet_count;
+    _dropped_packet_count_delta = _dropped_packet_count - _dropped_packet_count_previous;
+    _dropped_packet_count_previous = _dropped_packet_count;
 
-    _newPacketAvailable = true;
+    _new_packet_available = true;
     return true;
 }
 
-bool ReceiverVirtual::unpackPacket()
+bool ReceiverVirtual::unpack_packet()
 {
     return true;
 }
 
-uint16_t ReceiverVirtual::getChannelPWM(size_t index) const
+uint16_t ReceiverVirtual::get_channel_pwm(size_t index) const
 {
     // map switches to the auxiliary channels
     if (index < STICK_COUNT) {
         return CHANNEL_LOW;
     }
-    if (index >= _auxiliaryChannelCount + STICK_COUNT) {
+    if (index >= _auxiliary_channel_count + STICK_COUNT) {
         return CHANNEL_LOW;
     }
-    const uint16_t pwmValue = _pwmValues[index];
-    return (pwmValue == 0) ? getSwitch(index - STICK_COUNT) ? CHANNEL_HIGH : CHANNEL_LOW : pwmValue;
+    const uint16_t pwm_value = _pwm_values[index];
+    return (pwm_value == 0) ? get_switch(index - STICK_COUNT) ? CHANNEL_HIGH : CHANNEL_LOW : pwm_value;
 }
 
-void ReceiverVirtual::setChannelPWM(size_t index, uint16_t pwmValue)
+void ReceiverVirtual::set_channel_pwm(size_t index, uint16_t pwm_value)
 {
     if (index < CHANNEL_COUNT) {
-        _pwmValues[index] = pwmValue;
+        _pwm_values[index] = pwm_value;
         if (index >=  STICK_COUNT) {
-            setSwitch(index- STICK_COUNT, pwmValue < CHANNEL_MIDDLE ? 0 : 1);
+            set_switch(index- STICK_COUNT, pwm_value < CHANNEL_MIDDLE ? 0 : 1);
         }
     }
 }

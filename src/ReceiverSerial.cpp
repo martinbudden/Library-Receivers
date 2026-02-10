@@ -6,22 +6,22 @@ ReceiverSerialPortWatcher::ReceiverSerialPortWatcher(ReceiverBase& receiver) :
 {
 }
 
-bool ReceiverSerialPortWatcher::onDataReceivedFromISR(uint8_t data)
+bool ReceiverSerialPortWatcher::on_data_received_from_isr(uint8_t data)
 {
-    return _receiver.onDataReceivedFromISR(data);
+    return _receiver.on_data_received_from_isr(data);
 }
 
 
 ReceiverSerial::ReceiverSerial(SerialPort& serialPort) :
-    _serialPort(serialPort),
-    _serialPortWatcher(*this)
+    _serial_port(serialPort),
+    _serial_port_watcher(*this)
 {
 }
 
 void ReceiverSerial::init()
 {
-    _serialPort.init();
-    _packetCount = 0;
+    _serial_port.init();
+    _packet_count = 0;
 }
 
 /*!
@@ -29,20 +29,20 @@ This waits for data from the serial UART
 */
 int32_t ReceiverSerial::WAIT_FOR_DATA_RECEIVED(uint32_t ticksToWait)
 {
-    return _serialPort.WAIT_DATA_READY(ticksToWait);
+    return _serial_port.WAIT_DATA_READY(ticksToWait);
 }
 
-bool ReceiverSerial::isDataAvailable() const
+bool ReceiverSerial::is_data_available() const
 {
-    return _serialPort.isDataAvailable();
+    return _serial_port.is_data_available();
 }
 
 /*!
 Used to get received byte when using time-based scheduling.
 */
-uint8_t ReceiverSerial::readByte()
+uint8_t ReceiverSerial::read_byte()
 {
-    return _serialPort.readByte();
+    return _serial_port.read_byte();
 }
 
 /*!
@@ -50,27 +50,27 @@ If a packet was received then unpack it and return true.
 
 Returns false if an empty or invalid packet was received.
 */
-bool ReceiverSerial::update(uint32_t tickCountDelta)
+bool ReceiverSerial::update(uint32_t tick_count_delta)
 {
-    if (isPacketEmpty()) {
+    if (is_packet_empty()) {
         return false;
     }
 
-    if (!unpackPacket()) {
+    if (!unpack_packet()) {
         return false;
     }
 
-    _packetReceived = true;
-    ++_packetCount;
+    _packet_received = true;
+    ++_packet_count;
 
     // record tickoutDelta for instrumentation
-    _tickCountDelta = tickCountDelta;
+    _tick_count_delta = tick_count_delta;
 
     // track dropped packets
-    _droppedPacketCountDelta = _droppedPacketCount - _droppedPacketCountPrevious;
-    _droppedPacketCountPrevious = _droppedPacketCount;
+    _dropped_packet_count_delta = _dropped_packet_count - _dropped_packet_count_previous;
+    _dropped_packet_count_previous = _dropped_packet_count;
 
     // NOTE: there is no mutex around this flag
-    _newPacketAvailable = true;
+    _new_packet_available = true;
     return true;
 }

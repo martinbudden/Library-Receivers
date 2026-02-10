@@ -1,13 +1,13 @@
 #include "ReceiverSBUS.h"
 
 
-ReceiverSBUS::ReceiverSBUS(SerialPort& serialPort) :
+ReceiverSbus::ReceiverSbus(SerialPort& serialPort) :
     ReceiverSerial(serialPort)
 {
-    _auxiliaryChannelCount = CHANNEL_COUNT - STICK_COUNT;
+    _auxiliary_channel_count = CHANNEL_COUNT - STICK_COUNT;
 }
 
-uint16_t ReceiverSBUS::getChannelPWM(size_t index) const
+uint16_t ReceiverSbus::get_channel_pwm(size_t index) const
 {
     if (index >= CHANNEL_COUNT) {
         return CHANNEL_LOW;
@@ -18,33 +18,34 @@ uint16_t ReceiverSBUS::getChannelPWM(size_t index) const
 /*!
 Called from within ReceiverSerial ISR.
 */
-bool ReceiverSBUS::onDataReceivedFromISR(uint8_t data)
+bool ReceiverSbus::on_data_received_from_isr(uint8_t data)
 {
     const timeUs32_t timeNowUs = timeUs();
     enum { TIME_ALLOWANCE = 500 };
-    if (timeNowUs > _startTime + TIME_NEEDED_PER_FRAME_US + TIME_ALLOWANCE) { // cppcheck-suppress unsignedLessThanZero
-        _packetIndex = 0;
-        ++_droppedPacketCount;
+    if (timeNowUs > _start_time + TIME_NEEDED_PER_FRAME_US + TIME_ALLOWANCE) { // cppcheck-suppress unsignedLessThanZero
+        _packet_index = 0;
+        ++_dropped_packet_count;
     }
 
-    if (_packetIndex == 0) {
+    if (_packet_index == 0) {
         if (data != SBUS_START_BYTE) {
-            _packetIsEmpty = true;
+            _packet_is_empty = true;
             return false;
         }
-        _startTime = timeNowUs;
+        _start_time = timeNowUs;
     }
 
-    _packetISR[_packetIndex++] = data;
+    _packet_isr[_packet_index] = data;
+    ++_packet_index;
 
-    if (_packetIndex == PACKET_SIZE) {
-        _packetIndex = 0;
-        if (_packetISR[PACKET_SIZE - 1] != SBUS_END_BYTE) {
-            ++_errorPacketCount;
-            _packetIsEmpty = true;
+    if (_packet_index == PACKET_SIZE) {
+        _packet_index = 0;
+        if (_packet_isr[PACKET_SIZE - 1] != SBUS_END_BYTE) {
+            ++_error_packet_count;
+            _packet_is_empty = true;
             return false;
         }
-        _packet = _packetISR;
+        _packet = _packet_isr;
         return true;
     }
     return false;
@@ -65,10 +66,10 @@ SBUS uses range [192,1792] which is mapped to [1000,2000] ([CHANNEL_LOW,CHANNEL_
 
 Some transmitters/receivers use range [172,1811] which is  clipped.
 */
-bool ReceiverSBUS::unpackPacket()
+bool ReceiverSbus::unpack_packet()
 {
     if (_packet[PACKET_SIZE - 1] != SBUS_END_BYTE) {
-        _packetIsEmpty = true;
+        _packet_is_empty = true;
         return false;
     }
     // SBUS uses AETR (Ailerons, Elevator, Throttle, Rudder), ie ROLL, PITCH, THROTTLE, YAW
@@ -118,11 +119,11 @@ bool ReceiverSBUS::unpackPacket()
     _controls.pitch = (static_cast<float>(_channels[PITCH]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
     _controls.yaw = (static_cast<float>(_channels[YAW]) - CHANNEL_MIDDLE_F) / CHANNEL_RANGE_F;
 
-    _controlsPWM.throttle = _channels[THROTTLE];
-    _controlsPWM.roll = _channels[ROLL];
-    _controlsPWM.pitch = _channels[PITCH];
-    _controlsPWM.yaw = _channels[YAW];
+    _controls_pwm.throttle = _channels[THROTTLE];
+    _controls_pwm.roll = _channels[ROLL];
+    _controls_pwm.pitch = _channels[PITCH];
+    _controls_pwm.yaw = _channels[YAW];
 
-    _packetIsEmpty = false;
+    _packet_is_empty = false;
     return true;
 }

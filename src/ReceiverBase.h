@@ -3,19 +3,15 @@
 #include <cstddef>
 #include <cstdint>
 
-class ReceiverWatcher {
-public:
-    virtual ~ReceiverWatcher() = default;
-    virtual void newReceiverPacketAvailable() = 0;
-};
-
 /*!
 Abstract Base Class defining a receiver.
 */
 class ReceiverBase {
 public:
-    enum { STICK_COUNT = 4 };
-    enum { MOTOR_ON_OFF_SWITCH = 0, CONTROL_MODE_SWITCH = 1, ALTITUDE_MODE_SWITCH = 2 };
+    static constexpr uint8_t STICK_COUNT = 4;
+    static constexpr uint8_t MOTOR_ON_OFF_SWITCH = 0;
+    static constexpr uint8_t CONTROL_MODE_SWITCH = 1;
+    static constexpr uint8_t ALTITUDE_MODE_SWITCH = 2;
 
     static constexpr uint16_t CHANNEL_LOW =  1000;
     static constexpr uint16_t CHANNEL_HIGH = 2000;
@@ -34,28 +30,27 @@ public:
     static constexpr uint16_t RANGE_STEP_MID = ((CHANNEL_RANGE_MID - CHANNEL_RANGE_MIN) / CHANNEL_RANGE_STEP);
     static constexpr uint16_t RANGE_STEP_MAX = ((CHANNEL_RANGE_MAX - CHANNEL_RANGE_MIN) / CHANNEL_RANGE_STEP);
 
-    enum { // standardize receivers to use AETR (Ailerons, Elevator, Throttle, Rudder), ie ROLL, PITCH, THROTTLE, YAW
-        ROLL,
-        PITCH,
-        THROTTLE,
-        YAW,
-        AUX1,
-        AUX2,
-        AUX3,
-        AUX4,
-        AUX5,
-        AUX6,
-        AUX7,
-        AUX8,
-        AUX9,
-        AUX10,
-        AUX11,
-        AUX12,
-        AUX13,
-        AUX14,
-        AUX15,
-        AUX16,
-    };
+    // standardize receivers to use AETR (Ailerons, Elevator, Throttle, Rudder), ie ROLL, PITCH, THROTTLE, YAW
+    static constexpr uint8_t ROLL = 0;
+    static constexpr uint8_t PITCH = 1;
+    static constexpr uint8_t THROTTLE = 2;
+    static constexpr uint8_t YAW = 3;
+    static constexpr uint8_t AUX1= 4;
+    static constexpr uint8_t AUX2= 5;
+    static constexpr uint8_t AUX3= 6;
+    static constexpr uint8_t AUX4= 7;
+    static constexpr uint8_t AUX5= 8;
+    static constexpr uint8_t AUX6= 9;
+    static constexpr uint8_t AUX7= 10;
+    static constexpr uint8_t AUX8= 11;
+    static constexpr uint8_t AUX9= 12;
+    static constexpr uint8_t AUX10= 13;
+    static constexpr uint8_t AUX11= 14;
+    static constexpr uint8_t AUX12= 15;
+    static constexpr uint8_t AUX13= 16;
+    static constexpr uint8_t AUX14= 17;
+    static constexpr uint8_t AUX15= 18;
+    static constexpr uint8_t AUX16= 19;
 public:
      //! 48-bit extended unique identifier (often synonymous with MAC address)
     struct EUI_48_t {
@@ -82,66 +77,63 @@ public:
     48 steps between 900 and 2100
     */
     struct channel_range_t {
-        uint8_t startStep;
-        uint8_t endStep;
+        uint8_t start_step;
+        uint8_t end_step;
     };
 public:
     virtual ~ReceiverBase() = default;
 
-    ReceiverWatcher* getReceiverWatcher() const { return _receiverWatcher; }
-    void setReceiverWatcher(ReceiverWatcher* receiverWatcher) { _receiverWatcher = receiverWatcher; }
-    void setPositiveHalfThrottle(bool positiveHalfThrottle) { _positiveHalfThrottle = positiveHalfThrottle; }
+    void set_positive_half_throttle(bool positive_half_throttle) { _positive_half_throttle = positive_half_throttle; }
 
     // 48-bit Extended Unique Identifiers, usually the MAC address if the receiver has one, but may be an alternative provided by the receiver.
-    virtual EUI_48_t getMyEUI() const { const EUI_48_t ret {}; return ret; }
-    virtual EUI_48_t getPrimaryPeerEUI() const  { const EUI_48_t ret {}; return ret; }
-    virtual void broadcastMyEUI() const {}
+    virtual EUI_48_t get_mu_eui() const { const EUI_48_t ret {}; return ret; }
+    virtual EUI_48_t get_primary_peer_eui() const  { const EUI_48_t ret {}; return ret; }
+    virtual void broadcast_my_eui() const {}
 
     virtual int32_t WAIT_FOR_DATA_RECEIVED(uint32_t ticksToWait) = 0;
-    virtual bool onDataReceivedFromISR(uint8_t data) { (void)data; return false; }
-    virtual bool isDataAvailable() const { return false; }
-    virtual uint8_t readByte() { return 0; }
-    virtual bool update(uint32_t tickCountDelta) = 0;
-    virtual bool unpackPacket() = 0;
+    virtual bool on_data_received_from_isr(uint8_t data) { (void)data; return false; }
+    virtual bool is_data_available() const { return false; }
+    virtual uint8_t read_byte() { return 0; }
+    virtual bool update(uint32_t tick_count_delta) = 0;
+    virtual bool unpack_packet() = 0;
 
     //! Controls in range [0,1] for throttle, [-1,1] for roll, pitch, and yaw
-    controls_t getControls() const { return _controls; }
-    controls_pwm_t getControlsPWM() const { return _controlsPWM; }//!< channels in range [1000,2000]
+    controls_t get_controls() const { return _controls; }
+    controls_pwm_t get_controls_pwm() const { return _controls_pwm; }//!< channels in range [1000,2000]
 
-    virtual uint16_t getChannelPWM(size_t index) const = 0;
-    uint32_t getAuxiliaryChannelCount() const { return _auxiliaryChannelCount; }
-    uint16_t getAuxiliaryChannel(size_t index) const { return getChannelPWM(index + STICK_COUNT); }
-    bool isRangeActive(uint8_t auxiliaryChannelIndex, const channel_range_t& range) const {
-        if (range.startStep >= range.endStep) {
+    virtual uint16_t get_channel_pwm(size_t index) const = 0;
+    uint32_t get_auxiliary_channel_count() const { return _auxiliary_channel_count; }
+    uint16_t get_auxiliary_channel(size_t index) const { return get_channel_pwm(index + STICK_COUNT); }
+    bool is_range_active(uint8_t auxiliary_channel_index, const channel_range_t& range) const {
+        if (range.start_step >= range.end_step) {
             return false;
         }
-        const uint16_t channelValue = getAuxiliaryChannel(auxiliaryChannelIndex);
-        return (channelValue >= CHANNEL_RANGE_MIN + (range.startStep*CHANNEL_RANGE_STEP) && channelValue < CHANNEL_RANGE_MIN + (range.endStep*CHANNEL_RANGE_STEP));
+        const uint16_t channel_value = get_auxiliary_channel(auxiliary_channel_index);
+        return (channel_value >= CHANNEL_RANGE_MIN + (range.start_step*CHANNEL_RANGE_STEP) && channel_value < CHANNEL_RANGE_MIN + (range.end_step*CHANNEL_RANGE_STEP));
     }
 
-    uint32_t getSwitch(size_t index) const { return static_cast<uint32_t>((_switches & (0b11U << (2*index))) >> (2*index)); }
-    void setSwitch(size_t index, uint8_t value) { _switches &= static_cast<uint32_t>(~(0b11U << (2*index))); _switches |= static_cast<uint32_t>((value & 0b11U) << (2*index)); }
-    uint32_t getSwitches() const { return _switches; }
+    uint32_t get_switch(size_t index) const { return static_cast<uint32_t>((_switches & (0b11U << (2*index))) >> (2*index)); }
+    void set_switch(size_t index, uint8_t value) { _switches &= static_cast<uint32_t>(~(0b11U << (2*index))); _switches |= static_cast<uint32_t>((value & 0b11U) << (2*index)); }
+    uint32_t get_switches() const { return _switches; }
 
-    int32_t getDroppedPacketCountDelta() const { return _droppedPacketCountDelta; }
-    uint32_t getTickCountDelta() const { return _tickCountDelta; }
-    static float Q12dot4_to_float(int32_t q4dot12) { return static_cast<float>(q4dot12) * (1.0F / 2048.0F); } //<! convert Q12dot4 fixed point number to floating point
+    int32_t get_dropped_packet_count_delta() const { return _dropped_packet_count_delta; }
+    uint32_t get_tick_count_delta() const { return _tick_count_delta; }
+    static float q12dot4_to_float(int32_t q4dot12) { return static_cast<float>(q4dot12) * (1.0F / 2048.0F); } //<! convert _q12dot4 fixed point number to floating point
 
-    bool isPacketReceived() const { return _packetReceived; }
-    bool isNewPacketAvailable() const { return _newPacketAvailable; }
-    void clearNewPacketAvailable() { _newPacketAvailable = false; }
+    bool isPacket_received() const { return _packet_received; }
+    bool isNew_packet_available() const { return _new_packet_available; }
+    void clearNew_packet_available() { _new_packet_available = false; }
 protected:
-    ReceiverWatcher* _receiverWatcher {nullptr};
-    uint8_t _packetReceived {false}; // may be invalid packet
-    uint8_t _newPacketAvailable {false};
-    uint8_t _positiveHalfThrottle {false};
-    int32_t _packetCount {};
-    int32_t _droppedPacketCountDelta {};
-    int32_t _droppedPacketCount {};
-    int32_t _droppedPacketCountPrevious {};
-    uint32_t _tickCountDelta {};
+    uint8_t _packet_received {false}; // may be invalid packet
+    uint8_t _new_packet_available {false};
+    uint8_t _positive_half_throttle {false};
+    int32_t _packet_count {};
+    int32_t _dropped_packet_count_delta {};
+    int32_t _dropped_packet_count {};
+    int32_t _dropped_packet_count_previous {};
+    uint32_t _tick_count_delta {};
     uint32_t _switches {}; // 16 2 or 3 positions switches, each using 2-bits
     controls_t _controls {}; //!< the main 4 channels
-    controls_pwm_t _controlsPWM {}; //!< the main 4 channels in PWM range
-    uint32_t _auxiliaryChannelCount {};
+    controls_pwm_t _controls_pwm {}; //!< the main 4 channels in PWM range
+    uint32_t _auxiliary_channel_count {};
 };

@@ -5,4 +5,4 @@
 
 class ReceiverBase;
 
-size_t packTelemetryData_Receiver(uint8_t* telemetryDataPtr, uint32_t id, uint32_t sequenceNumber, const ReceiverBase& receiver); // NOLINT(readability-avoid-const-params-in-decls) false positive
+size_t pack_telemetry_data_receiver(uint8_t* telemetry_data_ptr, uint32_t id, uint32_t sequence_number, const ReceiverBase& receiver); // NOLINT(readability-avoid-const-params-in-decls) false positive
