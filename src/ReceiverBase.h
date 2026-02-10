@@ -88,7 +88,7 @@ public:
     void set_positive_half_throttle(bool positive_half_throttle) { _positive_half_throttle = positive_half_throttle; }
 
     // 48-bit Extended Unique Identifiers, usually the MAC address if the receiver has one, but may be an alternative provided by the receiver.
-    virtual EUI_48_t get_mu_eui() const { const EUI_48_t ret {}; return ret; }
+    virtual EUI_48_t get_my_eui() const { const EUI_48_t ret {}; return ret; }
     virtual EUI_48_t get_primary_peer_eui() const  { const EUI_48_t ret {}; return ret; }
     virtual void broadcast_my_eui() const {}
 

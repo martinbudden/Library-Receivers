@@ -26,7 +26,7 @@ public:
 
     virtual int32_t WAIT_FOR_DATA_RECEIVED(uint32_t ticksToWait) override;
     virtual bool update(uint32_t tick_count_delta) override;
-    virtual EUI_48_t get_mu_eui() const override;
+    virtual EUI_48_t get_my_eui() const override;
     virtual EUI_48_t get_primary_peer_eui() const override;
     virtual void broadcast_my_eui() const override;
     uint16_t get_channel_pwm(size_t index) const override;

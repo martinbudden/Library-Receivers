@@ -96,7 +96,7 @@ bool ReceiverAtomJoyStick::update(uint32_t tick_count_delta)
     return true;
 }
 
-ReceiverBase::EUI_48_t ReceiverAtomJoyStick::get_mu_eui() const
+ReceiverBase::EUI_48_t ReceiverAtomJoyStick::get_my_eui() const
 {
     EUI_48_t ret {};
     memcpy(&ret, _transceiver.my_mac_address(), sizeof(EUI_48_t));
