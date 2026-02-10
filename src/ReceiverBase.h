@@ -3,6 +3,22 @@
 #include <cstddef>
 #include <cstdint>
 
+//! control values from receiver scaled to the range [-1.0F, 1.0F]
+struct receiver_controls_t {
+    float throttle;
+    float roll;
+    float pitch;
+    float yaw;
+};
+
+//! controls mapped to the Pulse Width Modulation (PWM) range [1000, 2000]
+struct receiver_controls_pwm_t {
+    uint16_t throttle;
+    uint16_t roll;
+    uint16_t pitch;
+    uint16_t yaw;
+};
+
 /*!
 Abstract Base Class defining a receiver.
 */
@@ -56,20 +72,6 @@ public:
     struct EUI_48_t {
         uint8_t octets[6];
     };
-     //! control values from receiver scaled to the range [-1.0F, 1.0F]
-    struct controls_t {
-        float throttle;
-        float roll;
-        float pitch;
-        float yaw;
-    };
-    //! controls mapped to the Pulse Width Modulation (PWM) range [1000, 2000]
-    struct controls_pwm_t {
-        uint16_t throttle;
-        uint16_t roll;
-        uint16_t pitch;
-        uint16_t yaw;
-    };
     /*! 
     Steps are 25 apart
         a value of 0 corresponds to a channel value of 900 or less
@@ -98,8 +100,8 @@ public:
     virtual bool unpack_packet() = 0;
 
     //! Controls in range [0,1] for throttle, [-1,1] for roll, pitch, and yaw
-    controls_t get_controls() const { return _controls; }
-    controls_pwm_t get_controls_pwm() const { return _controls_pwm; }//!< channels in range [1000,2000]
+    receiver_controls_t get_controls() const { return _controls; }
+    receiver_controls_pwm_t get_controls_pwm() const { return _controls_pwm; }//!< channels in range [1000,2000]
 
     virtual uint16_t get_channel_pwm(size_t index) const = 0;
     uint32_t get_auxiliary_channel_count() const { return _auxiliary_channel_count; }
@@ -133,7 +135,7 @@ protected:
     int32_t _dropped_packet_count_previous {};
     uint32_t _tick_count_delta {};
     uint32_t _switches {}; // 16 2 or 3 positions switches, each using 2-bits
-    controls_t _controls {}; //!< the main 4 channels
-    controls_pwm_t _controls_pwm {}; //!< the main 4 channels in PWM range
+    receiver_controls_t _controls {}; //!< the main 4 channels
+    receiver_controls_pwm_t _controls_pwm {}; //!< the main 4 channels in PWM range
     uint32_t _auxiliary_channel_count {};
 };

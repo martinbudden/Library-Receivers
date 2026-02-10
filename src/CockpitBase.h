@@ -5,15 +5,15 @@
 class ReceiverBase;
 
 
+struct cockpit_controls_t {
+    uint32_t tick_count;
+    float throttle_stick;
+    float roll_stick;
+    float pitch_stick;
+    float yaw_stick;
+};
+
 class CockpitBase {
-public:
-    struct controls_t {
-        uint32_t tick_count;
-        float throttle_stick;
-        float roll_stick;
-        float pitch_stick;
-        float yaw_stick;
-    };
 public:
     virtual ~CockpitBase() = default;
     CockpitBase() = default;

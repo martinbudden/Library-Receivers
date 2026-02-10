@@ -54,7 +54,7 @@ void test_receiver_controls()
 {
     ReceiverVirtual receiver;
 
-    ReceiverBase::controls_t controls = receiver.get_controls();
+    receiver_controls_t controls = receiver.get_controls();
     TEST_ASSERT_EQUAL_FLOAT(0.0F, controls.throttle);
     TEST_ASSERT_EQUAL_FLOAT(0.0F, controls.roll);
     TEST_ASSERT_EQUAL_FLOAT(0.0F, controls.pitch);

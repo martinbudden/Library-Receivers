@@ -250,7 +250,7 @@ bool ReceiverAtomJoyStick::unpack_packet(checkPacket_t checkPacket)
     _alt_mode = _packet[22];
     _proactive_flag = _packet[23];
 
-    _controls_pwm = controls_pwm_t {
+    _controls_pwm = receiver_controls_pwm_t {
         .throttle = static_cast<uint16_t>(_positive_half_throttle ? (_controls.throttle*CHANNEL_RANGE_F + CHANNEL_LOW_F) : (_controls.throttle * CHANNEL_RANGE_F / 2.0F) + CHANNEL_MIDDLE_F),
         .roll = static_cast<uint16_t>((_controls.roll * CHANNEL_RANGE_F / 2.0F) + CHANNEL_MIDDLE_F),
         .pitch = static_cast<uint16_t>((_controls.pitch * CHANNEL_RANGE_F / 2.0F) + CHANNEL_MIDDLE_F),
@@ -274,15 +274,15 @@ float ReceiverAtomJoyStick::normalized_stick(size_t stick_index) const
 {
     const stick_t stick = _sticks[stick_index];
     if (!_bias_is_set) {
-       return _q12dot4_to_float(stick.raw_q12dot4);
+       return q12dot4_to_float(stick.raw_q12dot4);
     }
 
     const int32_t ret = stick.raw_q12dot4 - stick.bias_q12dot4;
     if (ret < -stick.deadband_q12dot4) {
-        return -_q12dot4_to_float(-stick.deadband_q12dot4 - ret); // (stick.bias - stick.deadband/2 - min);
+        return -q12dot4_to_float(-stick.deadband_q12dot4 - ret); // (stick.bias - stick.deadband/2 - min);
     }
     if (ret > stick.deadband_q12dot4) {
-        return _q12dot4_to_float(ret - stick.deadband_q12dot4); // (max - stick.bias - stick.deadband/2);
+        return q12dot4_to_float(ret - stick.deadband_q12dot4); // (max - stick.bias - stick.deadband/2);
     }
     return 0.0F;
 }

@@ -22,7 +22,7 @@ struct TD_RECEIVER {
     uint16_t tickInterval {0}; //!< tick number of ticks since last receiver update
     uint16_t dropped_packet_count {0}; //!< the number of packets dropped by the receiver
     struct data_t {
-        ReceiverBase::controls_t controls;
+        receiver_controls_t controls;
         uint32_t switches;
         std::array<uint16_t, 4> aux; //!< 4 auxiliary channels
     };

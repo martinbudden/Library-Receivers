@@ -25,7 +25,7 @@ public:
 public: // for testing
     void set_channel_pwm(size_t index, uint16_t pwm_value);
     void set_auxiliary_channel_pwm(size_t index, uint16_t pwm_value) { set_channel_pwm(index + ReceiverBase::STICK_COUNT, pwm_value); }
-    void set_controls(const controls_t& controls) { _controls = controls; }
+    void set_controls(const receiver_controls_t& controls) { _controls = controls; }
 private:
     uint32_t _received_packet_count {};
     std::array<uint16_t, CHANNEL_COUNT> _pwm_values {};
