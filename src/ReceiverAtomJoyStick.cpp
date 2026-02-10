@@ -10,7 +10,7 @@
 
 #endif
 
-ReceiverAtomJoyStick::ReceiverAtomJoyStick(const uint8_t* mac_address, uint8_t channel) :
+ReceiverAtomJoyStick::ReceiverAtomJoyStick(const uint8_t* mac_address, uint8_t channel) : // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
     _transceiver(mac_address, channel),
     _received_data(&_packet[0], sizeof(_packet))
 {
