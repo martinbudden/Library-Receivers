@@ -19,6 +19,17 @@ struct receiver_controls_pwm_t {
     uint16_t yaw;
 };
 
+/*! 
+Steps are 25 apart
+    a value of 0 corresponds to a channel value of 900 or less
+    a value of 48 corresponds to a channel value of 2100 or more
+48 steps between 900 and 2100
+*/
+struct receiver_channel_range_t {
+    uint8_t start_step;
+    uint8_t end_step;
+};
+
 /*!
 Abstract Base Class defining a receiver.
 */
@@ -72,16 +83,6 @@ public:
     struct EUI_48_t {
         uint8_t octets[6];
     };
-    /*! 
-    Steps are 25 apart
-        a value of 0 corresponds to a channel value of 900 or less
-        a value of 48 corresponds to a channel value of 2100 or more
-    48 steps between 900 and 2100
-    */
-    struct channel_range_t {
-        uint8_t start_step;
-        uint8_t end_step;
-    };
 public:
     virtual ~ReceiverBase() = default;
 
@@ -106,7 +107,7 @@ public:
     virtual uint16_t get_channel_pwm(size_t index) const = 0;
     uint32_t get_auxiliary_channel_count() const { return _auxiliary_channel_count; }
     uint16_t get_auxiliary_channel(size_t index) const { return get_channel_pwm(index + STICK_COUNT); }
-    bool is_range_active(uint8_t auxiliary_channel_index, const channel_range_t& range) const {
+    bool is_range_active(uint8_t auxiliary_channel_index, const receiver_channel_range_t& range) const {
         if (range.start_step >= range.end_step) {
             return false;
         }
