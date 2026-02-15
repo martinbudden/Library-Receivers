@@ -18,11 +18,11 @@
 #endif
 
 
-ReceiverTask::ReceiverTask(uint32_t taskIntervalMicroseconds, ReceiverBase& receiver, CockpitBase& cockpit, RcRates& rc_rates) :
+ReceiverTask::ReceiverTask(uint32_t taskIntervalMicroseconds, ReceiverBase& receiver, CockpitBase& cockpit, RcModes& rc_modes) :
     TaskBase(taskIntervalMicroseconds),
     _receiver(receiver),
     _cockpit(cockpit),
-    _rc_rates(rc_rates)
+    _rc_modes(rc_modes)
 {
 }
 
@@ -42,7 +42,7 @@ void ReceiverTask::loop()
     _tickCountPrevious = tickCount;
 
     if (_receiver.update(_tickCountDelta)) {
-        _cockpit.update_controls(tickCount, _receiver, _rc_rates);
+        _cockpit.update_controls(tickCount, _receiver, _rc_modes);
     } else {
         _cockpit.check_failsafe(tickCount);
     }
