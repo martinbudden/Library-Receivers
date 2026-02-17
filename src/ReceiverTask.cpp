@@ -18,11 +18,9 @@
 #endif
 
 
-ReceiverTask::ReceiverTask(uint32_t taskIntervalMicroseconds, ReceiverBase& receiver, CockpitBase& cockpit, RcModes& rc_modes) :
+ReceiverTask::ReceiverTask(uint32_t taskIntervalMicroseconds, const receiver_task_parameters_t& parameters) :
     TaskBase(taskIntervalMicroseconds),
-    _receiver(receiver),
-    _cockpit(cockpit),
-    _rc_modes(rc_modes)
+    _task(parameters)
 {
 }
 
@@ -41,10 +39,10 @@ void ReceiverTask::loop()
     _tickCountDelta = tickCount - _tickCountPrevious;
     _tickCountPrevious = tickCount;
 
-    if (_receiver.update(_tickCountDelta)) {
-        _cockpit.update_controls(tickCount, _receiver, _rc_modes);
+    if (_task.receiver.update(_tickCountDelta)) {
+        _task.cockpit.update_controls(tickCount, _task.receiver, _task.rc_modes, _task.flightController, _task.motorMixer);
     } else {
-        _cockpit.check_failsafe(tickCount);
+        _task.cockpit.check_failsafe(tickCount, _task.flightController, _task.motorMixer);
     }
 }
 
@@ -58,13 +56,13 @@ Task function for the ReceiverTask. Sets up and runs the task loop() function.
     // BaseType_t is int, TickType_t is uint32_t
     if (_taskIntervalMicroseconds == 0) {
         // event driven scheduling
-        const uint32_t ticksToWait = _cockpit.get_timeout_ticks();
+        const uint32_t ticksToWait = _task.cockpit.get_timeout_ticks();
         while (true) {
-            if (_receiver.WAIT_FOR_DATA_RECEIVED(ticksToWait) == pdPASS) {
+            if (_task.receiver.WAIT_FOR_DATA_RECEIVED(ticksToWait) == pdPASS) {
                 loop();
             } else {
                 // WAIT timed out, so check failsafe
-                _cockpit.check_failsafe(xTaskGetTickCount());
+                _task.cockpit.check_failsafe(xTaskGetTickCount(), _task.flightController, _task.motorMixer);
             }
         }
     } else {
@@ -82,9 +80,9 @@ Task function for the ReceiverTask. Sets up and runs the task loop() function.
 #else
             vTaskDelayUntil(&_previousWakeTimeTicks, taskIntervalTicks);
 #endif
-            while (_receiver.is_data_available()) {
+            while (_task.receiver.is_data_available()) {
                 // Read 1 byte from UART buffer and give it to the RX protocol parser
-                if (_receiver.on_data_received_from_isr(_receiver.read_byte())) {
+                if (_task.receiver.on_data_received_from_isr(_task.receiver.read_byte())) {
                     // on_data_received returns true once packet is complete
                     break;
                 }

@@ -24,25 +24,25 @@
 #endif // FRAMEWORK_USE_FREERTOS
 
 
-ReceiverTask* ReceiverTask::createTask(ReceiverBase& receiver, CockpitBase& cockpit, RcModes& rc_modes, uint8_t priority, uint32_t core)
+ReceiverTask* ReceiverTask::createTask(const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core)
 {
-    return createTask(receiver, cockpit, rc_modes, priority, core, 0);
+    return createTask(parameters, priority, core, 0);
 }
 
-ReceiverTask* ReceiverTask::createTask(task_info_t& taskInfo, ReceiverBase& receiver, CockpitBase& cockpit, RcModes& rc_modes, uint8_t priority, uint32_t core)
+ReceiverTask* ReceiverTask::createTask(task_info_t& taskInfo, const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core)
 {
-    return createTask(taskInfo, receiver, cockpit, rc_modes, priority, core, 0);
+    return createTask(taskInfo, parameters, priority, core, 0);
 }
 
-ReceiverTask* ReceiverTask::createTask(ReceiverBase& receiver, CockpitBase& cockpit, RcModes& rc_modes, uint8_t priority, uint32_t core, uint32_t taskIntervalMicroseconds)
+ReceiverTask* ReceiverTask::createTask(const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core, uint32_t taskIntervalMicroseconds)
 {
     task_info_t taskInfo {};
-    return createTask(taskInfo, receiver, cockpit, rc_modes, priority, core, taskIntervalMicroseconds);
+    return createTask(taskInfo, parameters, priority, core, taskIntervalMicroseconds);
 }
 
-ReceiverTask* ReceiverTask::createTask(task_info_t& taskInfo, ReceiverBase& receiver, CockpitBase& cockpit, RcModes& rc_modes, uint8_t priority, uint32_t core, uint32_t taskIntervalMicroseconds)
+ReceiverTask* ReceiverTask::createTask(task_info_t& taskInfo, const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core, uint32_t taskIntervalMicroseconds)
 {
-    static ReceiverTask receiverTask(taskIntervalMicroseconds, receiver, cockpit, rc_modes);
+    static ReceiverTask receiverTask(taskIntervalMicroseconds, parameters);
 
     // Note that task parameters must not be on the stack, since they are used when the task is started, which is after this function returns.
     static TaskBase::parameters_t taskParameters { // NOLINT(misc-const-correctness) false positive
