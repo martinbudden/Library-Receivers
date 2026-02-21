@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SerialPort.h"
-#include "ReceiverBase.h"
+#include "serial_port.h"
+#include "receiver_base.h"
 
 
 class ReceiverSerialPortWatcher : public SerialPortWatcherBase {

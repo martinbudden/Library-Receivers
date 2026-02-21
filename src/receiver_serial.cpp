@@ -1,4 +1,4 @@
-#include "ReceiverSerial.h"
+#include "receiver_serial.h"
 
 
 ReceiverSerialPortWatcher::ReceiverSerialPortWatcher(ReceiverBase& receiver) :

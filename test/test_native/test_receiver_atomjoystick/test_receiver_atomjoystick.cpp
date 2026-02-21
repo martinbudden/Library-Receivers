@@ -1,4 +1,4 @@
-#include "ReceiverAtomJoyStick.h"
+#include "receiver_atom_joystick.h"
 
 #include <unity.h>
 
@@ -17,7 +17,7 @@ void test_receiver_atom_joystick_auxiliary_channels()
     std::array<uint8_t, 6> mac_address;
     enum { WIFI_CHANNEL = 0 };
 
-    static ReceiverAtomJoyStick receiver(&mac_address[0], WIFI_CHANNEL);
+    static ReceiverAtomJoystick receiver(&mac_address[0], WIFI_CHANNEL);
 
     uint8_t switchIndex = 0;
     TEST_ASSERT_EQUAL(0, receiver.get_switch(switchIndex));

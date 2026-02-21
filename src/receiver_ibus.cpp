@@ -1,4 +1,4 @@
-#include "ReceiverIbus.h"
+#include "receiver_ibus.h"
 
 
 ReceiverIbus::ReceiverIbus(SerialPort& serialPort) :

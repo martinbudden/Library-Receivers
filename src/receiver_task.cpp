@@ -1,6 +1,6 @@
-#include "CockpitBase.h"
-#include "ReceiverBase.h"
-#include "ReceiverTask.h"
+#include "cockpit_base.h"
+#include "receiver_base.h"
+#include "receiver_task.h"
 
 #include <time_microseconds.h>
 

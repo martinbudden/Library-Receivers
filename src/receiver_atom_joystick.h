@@ -1,18 +1,18 @@
 #pragma once
 
-#include "EspnowTransceiver.h"
-#include "ReceiverBase.h"
+#include "espnow_transceiver.h"
+#include "receiver_base.h"
 
 
-class ReceiverAtomJoyStick : public ReceiverBase {
+class ReceiverAtomJoystick : public ReceiverBase {
 public:
-    ReceiverAtomJoyStick(const uint8_t* mac_address, uint8_t channel);
+    ReceiverAtomJoystick(const uint8_t* mac_address, uint8_t channel);
 private:
-    // ReceiverAtomJoyStick is not copyable or moveable
-    ReceiverAtomJoyStick(const ReceiverAtomJoyStick&) = delete;
-    ReceiverAtomJoyStick& operator=(const ReceiverAtomJoyStick&) = delete;
-    ReceiverAtomJoyStick(ReceiverAtomJoyStick&&) = delete;
-    ReceiverAtomJoyStick& operator=(ReceiverAtomJoyStick&&) = delete;
+    // ReceiverAtomJoystick is not copyable or moveable
+    ReceiverAtomJoystick(const ReceiverAtomJoystick&) = delete;
+    ReceiverAtomJoystick& operator=(const ReceiverAtomJoystick&) = delete;
+    ReceiverAtomJoystick(ReceiverAtomJoystick&&) = delete;
+    ReceiverAtomJoystick& operator=(ReceiverAtomJoystick&&) = delete;
 public:
     static constexpr uint8_t MODE_SWITCH = 1;
     static constexpr uint8_t ALT_MODE_SWITCH = 2;
@@ -34,7 +34,7 @@ public:
     EspnowTransceiver& get_espnow_transceiver() { return _transceiver; }
     static int32_t ubyte4float_to_q12dot4(const uint8_t f[4]);
 private:
-    // from AtomJoyStickReceiver
+    // from AtomJoystickReceiver
     inline bool is_packet_empty() const { return _received_data.len == 0 ? true : false;  }
     inline void set_packet_empty() { _received_data.len = 0; }
     enum { DEFAULT_BROADCAST_COUNT = 20, DEFAULT_BROADCAST_DELAY_MS = 50 };

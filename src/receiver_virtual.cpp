@@ -1,4 +1,4 @@
-#include "ReceiverVirtual.h"
+#include "receiver_virtual.h"
 
 
 ReceiverVirtual::ReceiverVirtual()

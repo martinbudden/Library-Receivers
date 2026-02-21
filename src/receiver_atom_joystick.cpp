@@ -1,4 +1,4 @@
-#include "ReceiverAtomJoyStick.h"
+#include "receiver_atom_joystick.h"
 #include <cstring>
 #if defined(LIBRARY_RECEIVER_USE_ESPNOW)
 //#include <HardwareSerial.h>
@@ -10,7 +10,7 @@
 
 #endif
 
-ReceiverAtomJoyStick::ReceiverAtomJoyStick(const uint8_t* mac_address, uint8_t channel) : // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+ReceiverAtomJoystick::ReceiverAtomJoystick(const uint8_t* mac_address, uint8_t channel) : // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
     _transceiver(mac_address, channel),
     _received_data(&_packet[0], sizeof(_packet))
 {
@@ -21,7 +21,7 @@ ReceiverAtomJoyStick::ReceiverAtomJoyStick(const uint8_t* mac_address, uint8_t c
 /*!
 Initialize the transceiver.
 */
-int32_t ReceiverAtomJoyStick::init()
+int32_t ReceiverAtomJoystick::init()
 {
 #if defined(LIBRARY_RECEIVER_USE_ESPNOW)
     const esp_err_t err = _transceiver.init(_received_data, nullptr);
@@ -31,17 +31,17 @@ int32_t ReceiverAtomJoyStick::init()
 #endif
 }
 
-int32_t ReceiverAtomJoyStick::WAIT_FOR_DATA_RECEIVED(uint32_t ticksToWait)
+int32_t ReceiverAtomJoystick::WAIT_FOR_DATA_RECEIVED(uint32_t ticksToWait)
 {
     return _transceiver.WAIT_FOR_PRIMARY_DATA_RECEIVED(ticksToWait);
 }
 
 /*!
-If a packet was received from the atomJoyStickReceiver then unpack it and return true.
+If a packet was received from the atomJoystickReceiver then unpack it and return true.
 
 Returns false if an empty or invalid packet was received.
 */
-bool ReceiverAtomJoyStick::update(uint32_t tick_count_delta)
+bool ReceiverAtomJoystick::update(uint32_t tick_count_delta)
 {
     if (is_packet_empty()) {
         return false;
@@ -88,7 +88,7 @@ bool ReceiverAtomJoyStick::update(uint32_t tick_count_delta)
         return true;
     }
 #if defined(LIBRARY_RECEIVER_USE_ESPNOW)
-    static const char *TAG = "ReceiverAtomJoyStick::update";
+    static const char *TAG = "ReceiverAtomJoystick::update";
     ESP_LOGI(TAG, "BadPacket");
     //Serial.printf("BadPacket\r\n");
 #endif
@@ -96,33 +96,33 @@ bool ReceiverAtomJoyStick::update(uint32_t tick_count_delta)
     return true;
 }
 
-ReceiverBase::EUI_48_t ReceiverAtomJoyStick::get_my_eui() const
+ReceiverBase::EUI_48_t ReceiverAtomJoystick::get_my_eui() const
 {
     EUI_48_t ret {};
     memcpy(&ret, _transceiver.my_mac_address(), sizeof(EUI_48_t));
     return ret;
 }
 
-ReceiverBase::EUI_48_t ReceiverAtomJoyStick::get_primary_peer_eui() const
+ReceiverBase::EUI_48_t ReceiverAtomJoystick::get_primary_peer_eui() const
 {
     EUI_48_t ret {};
     memcpy(&ret, _transceiver.get_primary_peer_mac_address(), sizeof(EUI_48_t));
     return ret;
 }
 
-void ReceiverAtomJoyStick::broadcast_my_eui() const
+void ReceiverAtomJoystick::broadcast_my_eui() const
 {
     broadcast_my_mac_address_for_binding();
 }
 
 #if false
-uint16_t ReceiverAtomJoyStick::get_auxiliary_channel(size_t index) const
+uint16_t ReceiverAtomJoystick::get_auxiliary_channel(size_t index) const
 {
     return (index >= _auxiliary_channel_count) ? CHANNEL_LOW : get_switch(index) ? CHANNEL_HIGH : CHANNEL_LOW;
 }
 #endif
 
-uint16_t ReceiverAtomJoyStick::get_channel_pwm(size_t index) const
+uint16_t ReceiverAtomJoystick::get_channel_pwm(size_t index) const
 {
     if (index >= _auxiliary_channel_count + STICK_COUNT) {
         return CHANNEL_LOW;
@@ -141,7 +141,7 @@ uint16_t ReceiverAtomJoyStick::get_channel_pwm(size_t index) const
     }
 }
 
-esp_err_t ReceiverAtomJoyStick::broadcast_my_mac_address_for_binding(int broadcast_count, uint32_t broadcastDelayMs) const
+esp_err_t ReceiverAtomJoystick::broadcast_my_mac_address_for_binding(int broadcast_count, uint32_t broadcastDelayMs) const
 {
     // peer command as used by the StampFlyController, see: https://github.com/m5stack/Atom-JoyStick/blob/main/examples/StampFlyController/src/main.cpp#L117
     static const std::array<uint8_t, 4> peerCommand { 0xaa, 0x55, 0x16, 0x88 };
@@ -158,7 +158,7 @@ esp_err_t ReceiverAtomJoyStick::broadcast_my_mac_address_for_binding(int broadca
         //  cppcheck-suppress knownConditionTrueFalse
         if (err != ESP_OK) {
 #if defined(LIBRARY_RECEIVER_USE_ESPNOW)
-            static const char *TAG = "ReceiverAtomJoyStick::broadcast_my_mac_address_for_binding";
+            static const char *TAG = "ReceiverAtomJoystick::broadcast_my_mac_address_for_binding";
             ESP_LOGI(TAG, "failed: %X", err);
             //Serial.printf("broadcast_my_mac_address_for_binding failed: %X\r\n", err);
 #endif
@@ -176,7 +176,7 @@ esp_err_t ReceiverAtomJoyStick::broadcast_my_mac_address_for_binding(int broadca
 /*!
 Convert the 4 bytes of a floating point number to a fixed point integer in _q12dot4 format, ie in range [-2048,2047].
 */
-int32_t ReceiverAtomJoyStick::ubyte4float_to_q12dot4(const uint8_t f[4]) // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+int32_t ReceiverAtomJoystick::ubyte4float_to_q12dot4(const uint8_t f[4]) // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 {
     union bi_t { // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
         std::array<uint8_t, 4> b;
@@ -196,7 +196,7 @@ int32_t ReceiverAtomJoyStick::ubyte4float_to_q12dot4(const uint8_t f[4]) // NOLI
     return sign ? -i : i;
 }
 
-bool ReceiverAtomJoyStick::unpack_packet()
+bool ReceiverAtomJoystick::unpack_packet()
 {
     return unpack_packet(CHECK_PACKET);
 }
@@ -206,7 +206,7 @@ Check the packet if `checkPacket` set. If the packet is valid then unpack it int
 
 Returns true if a valid packet received, false otherwise.
 */
-bool ReceiverAtomJoyStick::unpack_packet(checkPacket_t checkPacket)
+bool ReceiverAtomJoystick::unpack_packet(checkPacket_t checkPacket)
 {
     // see https://github.com/M5Fly-kanazawa/AtomJoy2024June/blob/main/src/main.cpp#L560 for packet format
     if (is_packet_empty()) {
@@ -262,7 +262,7 @@ bool ReceiverAtomJoyStick::unpack_packet(checkPacket_t checkPacket)
     return true;
 }
 
-void ReceiverAtomJoyStick::set_current_readings_to_bias()
+void ReceiverAtomJoystick::set_current_readings_to_bias()
 {
     _bias_is_set = static_cast<int>(true);
     for (auto& stick : _sticks) {
@@ -270,7 +270,7 @@ void ReceiverAtomJoyStick::set_current_readings_to_bias()
     }
 }
 
-float ReceiverAtomJoyStick::normalized_stick(size_t stick_index) const
+float ReceiverAtomJoystick::normalized_stick(size_t stick_index) const
 {
     const stick_t stick = _sticks[stick_index];
     if (!_bias_is_set) {
@@ -287,7 +287,7 @@ float ReceiverAtomJoyStick::normalized_stick(size_t stick_index) const
     return 0.0F;
 }
 
-void ReceiverAtomJoyStick::reset_sticks()
+void ReceiverAtomJoystick::reset_sticks()
 {
     _bias_is_set = static_cast<int>(false);
     for (auto& stick : _sticks) {
@@ -296,7 +296,7 @@ void ReceiverAtomJoyStick::reset_sticks()
     }
 }
 
-void ReceiverAtomJoyStick::set_deadband(int32_t deadband_q12dot4)
+void ReceiverAtomJoystick::set_deadband(int32_t deadband_q12dot4)
 {
     for (auto& stick : _sticks) {
         stick.deadband_q12dot4 = deadband_q12dot4;

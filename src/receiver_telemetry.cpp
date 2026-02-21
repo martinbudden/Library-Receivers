@@ -1,5 +1,5 @@
-#include "ReceiverTelemetry.h"
-#include "ReceiverTelemetryData.h"
+#include "receiver_telemetry.h"
+#include "receiver_telemetry_data.h"
 
 
 /*!

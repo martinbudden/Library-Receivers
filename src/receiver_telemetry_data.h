@@ -3,7 +3,7 @@
 /*!
 Packet definitions of telemetry data useful to any Stabilized Vehicle.
 */
-#include "ReceiverBase.h"
+#include "receiver_base.h"
 #include <array>
 
 

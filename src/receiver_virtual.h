@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ReceiverBase.h"
+#include "receiver_base.h"
 
 #include <array>
 
