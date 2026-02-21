@@ -39,5 +39,5 @@ protected:
     uint32_t _received_packet_count {};
     int32_t _error_packet_count {};
     size_t _packet_index {};
-    timeUs32_t _start_time {};
+    time_us32_t _start_time {};
 };

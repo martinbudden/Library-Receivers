@@ -2,7 +2,7 @@
 #include "ReceiverBase.h"
 #include "ReceiverTask.h"
 
-#include <TimeMicroseconds.h>
+#include <time_microseconds.h>
 
 #if defined(FRAMEWORK_USE_FREERTOS)
 #if defined(FRAMEWORK_ESPIDF) || defined(FRAMEWORK_ARDUINO_ESP32)
@@ -18,8 +18,8 @@
 #endif
 
 
-ReceiverTask::ReceiverTask(uint32_t taskIntervalMicroseconds, const receiver_task_parameters_t& parameters) :
-    TaskBase(taskIntervalMicroseconds),
+ReceiverTask::ReceiverTask(uint32_t task_interval_microseconds, const receiver_task_parameters_t& parameters) :
+    TaskBase(task_interval_microseconds),
     _task(parameters)
 {
 }
@@ -29,20 +29,20 @@ loop() function for when not using FREERTOS
 */
 void ReceiverTask::loop()
 {
-    // calculate _tickCountDelta to get actual deltaT value, since we may have been delayed for more than taskIntervalTicks
+    // calculate _tick_count_delta to get actual deltaT value, since we may have been delayed for more than task_interval_ticks
 #if defined(FRAMEWORK_USE_FREERTOS)
-    const TickType_t tickCount = xTaskGetTickCount();
+    const TickType_t tick_count = xTaskGetTickCount();
 #else
-    const uint32_t tickCount = timeMs();
+    const uint32_t tick_count = time_ms();
 #endif
 
-    _tickCountDelta = tickCount - _tickCountPrevious;
-    _tickCountPrevious = tickCount;
+    _tick_count_delta = tick_count - _tick_count_previous;
+    _tick_count_previous = tick_count;
 
-    if (_task.receiver.update(_tickCountDelta)) {
-        _task.cockpit.update_controls(tickCount, _task.receiver, _task.rc_modes, _task.flightController, _task.motorMixer);
+    if (_task.receiver.update(_tick_count_delta)) {
+        _task.cockpit.update_controls(tick_count, _task.receiver, _task.rc_modes, _task.flight_controller, _task.motor_mixer);
     } else {
-        _task.cockpit.check_failsafe(tickCount, _task.flightController, _task.motorMixer);
+        _task.cockpit.check_failsafe(tick_count, _task.flight_controller, _task.motor_mixer);
     }
 }
 
@@ -54,7 +54,7 @@ Task function for the ReceiverTask. Sets up and runs the task loop() function.
 #if defined(FRAMEWORK_USE_FREERTOS)
 
     // BaseType_t is int, TickType_t is uint32_t
-    if (_taskIntervalMicroseconds == 0) {
+    if (_task_interval_microseconds == 0) {
         // event driven scheduling
         const uint32_t ticksToWait = _task.cockpit.get_timeout_ticks();
         while (true) {
@@ -62,23 +62,23 @@ Task function for the ReceiverTask. Sets up and runs the task loop() function.
                 loop();
             } else {
                 // WAIT timed out, so check failsafe
-                _task.cockpit.check_failsafe(xTaskGetTickCount(), _task.flightController, _task.motorMixer);
+                _task.cockpit.check_failsafe(xTaskGetTickCount(), _task.flight_controller, _task.motor_mixer);
             }
         }
     } else {
         // time based scheduling
-        const uint32_t taskIntervalTicks = _taskIntervalMicroseconds < 1000 ? 1 : pdMS_TO_TICKS(_taskIntervalMicroseconds / 1000);
-        _previousWakeTimeTicks = xTaskGetTickCount();
+        const uint32_t task_interval_ticks = _task_interval_microseconds < 1000 ? 1 : pdMS_TO_TICKS(_task_interval_microseconds / 1000);
+        _previous_wake_time_ticks = xTaskGetTickCount();
 
         while (true) {
-            // delay until the end of the next taskIntervalTicks
+            // delay until the end of the next task_interval_ticks
 #if (tskKERNEL_VERSION_MAJOR > 10) || ((tskKERNEL_VERSION_MAJOR == 10) && (tskKERNEL_VERSION_MINOR >= 5))
-            const BaseType_t wasDelayed = xTaskDelayUntil(&_previousWakeTimeTicks, taskIntervalTicks);
-            if (wasDelayed) {
-                _wasDelayed = true;
+            const BaseType_t was_delayed = xTaskDelayUntil(&_previous_wake_time_ticks, task_interval_ticks);
+            if (was_delayed) {
+                _was_delayed = true;
             }
 #else
-            vTaskDelayUntil(&_previousWakeTimeTicks, taskIntervalTicks);
+            vTaskDelayUntil(&_previous_wake_time_ticks, task_interval_ticks);
 #endif
             while (_task.receiver.is_data_available()) {
                 // Read 1 byte from UART buffer and give it to the RX protocol parser
@@ -98,7 +98,7 @@ Task function for the ReceiverTask. Sets up and runs the task loop() function.
 /*!
 Wrapper function for ReceiverTask::Task with the correct signature to be used in xTaskCreate.
 */
-[[noreturn]] void ReceiverTask::Task(void* arg)
+[[noreturn]] void ReceiverTask::task_static(void* arg)
 {
     const TaskBase::parameters_t* parameters = static_cast<TaskBase::parameters_t*>(arg);
 

@@ -1,7 +1,6 @@
 #include "ReceiverBase.h"
 #include "ReceiverTask.h"
 
-#include <TaskBase.h>
 #include <array>
 #include <cassert>
 #include <cstring>
@@ -20,33 +19,34 @@
 #include <FreeRTOSConfig.h>
 #include <task.h>
 #endif
+#include <task_base.h>
 
 #endif // FRAMEWORK_USE_FREERTOS
 
 
-ReceiverTask* ReceiverTask::createTask(const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core)
+ReceiverTask* ReceiverTask::create_task(const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core)
 {
-    return createTask(parameters, priority, core, 0);
+    return create_task(parameters, priority, core, 0);
 }
 
-ReceiverTask* ReceiverTask::createTask(task_info_t& taskInfo, const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core)
+ReceiverTask* ReceiverTask::create_task(task_info_t& task_info, const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core)
 {
-    return createTask(taskInfo, parameters, priority, core, 0);
+    return create_task(task_info, parameters, priority, core, 0);
 }
 
-ReceiverTask* ReceiverTask::createTask(const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core, uint32_t taskIntervalMicroseconds)
+ReceiverTask* ReceiverTask::create_task(const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core, uint32_t task_interval_microseconds)
 {
-    task_info_t taskInfo {};
-    return createTask(taskInfo, parameters, priority, core, taskIntervalMicroseconds);
+    task_info_t task_info {};
+    return create_task(task_info, parameters, priority, core, task_interval_microseconds);
 }
 
-ReceiverTask* ReceiverTask::createTask(task_info_t& taskInfo, const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core, uint32_t taskIntervalMicroseconds)
+ReceiverTask* ReceiverTask::create_task(task_info_t& task_info, const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core, uint32_t task_interval_microseconds)
 {
-    static ReceiverTask receiverTask(taskIntervalMicroseconds, parameters);
+    static ReceiverTask receiver_task(task_interval_microseconds, parameters);
 
     // Note that task parameters must not be on the stack, since they are used when the task is started, which is after this function returns.
     static TaskBase::parameters_t taskParameters { // NOLINT(misc-const-correctness) false positive
-        .task = &receiverTask,
+        .task = &receiver_task,
     };
 #if !defined(RECEIVER_TASK_STACK_DEPTH_BYTES)
     enum { RECEIVER_TASK_STACK_DEPTH_BYTES = 4096 };
@@ -56,60 +56,60 @@ ReceiverTask* ReceiverTask::createTask(task_info_t& taskInfo, const receiver_tas
 #else
     static std::array<StackType_t, RECEIVER_TASK_STACK_DEPTH_BYTES / sizeof(StackType_t)> stack;
 #endif
-    taskInfo = {
-        .taskHandle = nullptr,
+    task_info = {
+        .task_handle = nullptr,
         .name = "ReceiverTask", // max length 16, including zero terminator
-        .stackDepthBytes = RECEIVER_TASK_STACK_DEPTH_BYTES,
-        .stackBuffer = reinterpret_cast<uint8_t*>(&stack[0]), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        .stack_depth_bytes = RECEIVER_TASK_STACK_DEPTH_BYTES,
+        .stack_buffer = reinterpret_cast<uint8_t*>(&stack[0]), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         .priority = priority,
         .core = core,
-        .taskIntervalMicroseconds = taskIntervalMicroseconds
+        .task_interval_microseconds = task_interval_microseconds
     };
 #if defined(FRAMEWORK_USE_FREERTOS)
-    assert(std::strlen(taskInfo.name) < configMAX_TASK_NAME_LEN);
-    assert(taskInfo.priority < configMAX_PRIORITIES);
+    assert(std::strlen(task_info.name) < configMAX_TASK_NAME_LEN);
+    assert(task_info.priority < configMAX_PRIORITIES);
 
     static StaticTask_t taskBuffer;
 #if defined(FRAMEWORK_ESPIDF) || defined(FRAMEWORK_ARDUINO_ESP32)
-    taskInfo.taskHandle = xTaskCreateStaticPinnedToCore(
-        ReceiverTask::Task,
-        taskInfo.name,
-        taskInfo.stackDepthBytes / sizeof(StackType_t),
+    task_info.task_handle = xTaskCreateStaticPinnedToCore(
+        ReceiverTask::task_static,
+        task_info.name,
+        task_info.stack_depth_bytes / sizeof(StackType_t),
         &taskParameters,
-        taskInfo.priority,
+        task_info.priority,
         &stack[0],
         &taskBuffer,
-        taskInfo.core
+        task_info.core
     );
-    assert(taskInfo.taskHandle != nullptr && "Unable to create ReceiverTask");
+    assert(task_info.task_handle != nullptr && "Unable to create ReceiverTask");
 #elif defined(FRAMEWORK_RPI_PICO) || defined(FRAMEWORK_ARDUINO_RPI_PICO)
-    taskInfo.taskHandle = xTaskCreateStaticAffinitySet(
-        ReceiverTask::Task,
-        taskInfo.name,
-        taskInfo.stackDepthBytes / sizeof(StackType_t),
+    task_info.task_handle = xTaskCreateStaticAffinitySet(
+        ReceiverTask::task_static,
+        task_info.name,
+        task_info.stack_depth_bytes / sizeof(StackType_t),
         &taskParameters,
-        taskInfo.priority,
+        task_info.priority,
         &stack[0],
         &taskBuffer,
-        taskInfo.core
+        task_info.core
     );
-    assert(taskInfo.taskHandle != nullptr && "Unable to create ReceiverTask");
+    assert(task_info.task_handle != nullptr && "Unable to create ReceiverTask");
 #else
-    taskInfo.taskHandle = xTaskCreateStatic(
-        ReceiverTask::Task,
-        taskInfo.name,
-        taskInfo.stackDepthBytes / sizeof(StackType_t),
+    task_info.task_handle = xTaskCreateStatic(
+        ReceiverTask::task_static,
+        task_info.name,
+        task_info.stack_depth_bytes / sizeof(StackType_t),
         &taskParameters,
-        taskInfo.priority,
+        task_info.priority,
         &stack[0],
         &taskBuffer
     );
-    assert(taskInfo.taskHandle != nullptr && "Unable to create ReceiverTask");
-    // vTaskCoreAffinitySet(taskInfo.taskHandle, taskInfo.core);
+    assert(task_info.task_handle != nullptr && "Unable to create ReceiverTask");
+    // vTaskCoreAffinitySet(task_info.task_handle, task_info.core);
 #endif
 #else
     (void)taskParameters;
 #endif // FRAMEWORK_USE_FREERTOS
 
-    return &receiverTask;
+    return &receiver_task;
 }

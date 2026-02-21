@@ -33,8 +33,8 @@ Called from within ReceiverSerial ISR.
 */
 bool ReceiverCrsf::on_data_received_from_isr(uint8_t data)
 {
-    const timeUs32_t timeNowUs = timeUs();
-    if (timeNowUs > _start_time + TIME_NEEDED_PER_FRAME_US) { // cppcheck-suppress unsignedLessThanZero
+    const time_us32_t time_now_us = time_us();
+    if (time_now_us > _start_time + TIME_NEEDED_PER_FRAME_US) { // cppcheck-suppress unsignedLessThanZero
         _packet_index = 0;
         ++_dropped_packet_count;
     }
@@ -45,7 +45,7 @@ bool ReceiverCrsf::on_data_received_from_isr(uint8_t data)
             _packet_is_empty = true;
             return false;
         }
-        _start_time = timeNowUs;
+        _start_time = time_now_us;
         break;
     case 1:
         _packetSize = data + 2;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <TaskBase.h> // NOLINT(clang-diagnostic-pragma-pack)
+#include <task_base.h> // NOLINT(clang-diagnostic-pragma-pack)
 
 class CockpitBase;
 class FlightController;
@@ -13,20 +13,20 @@ struct receiver_task_parameters_t {
     ReceiverBase& receiver;
     CockpitBase& cockpit;
     RcModes& rc_modes;
-    FlightController& flightController;
-    MotorMixerBase& motorMixer;
+    FlightController& flight_controller;
+    MotorMixerBase& motor_mixer;
 };
 
 class ReceiverTask : public TaskBase {
 public:
-    ReceiverTask(uint32_t taskIntervalMicroseconds, const receiver_task_parameters_t& parameters);
+    ReceiverTask(uint32_t task_interval_microseconds, const receiver_task_parameters_t& parameters);
 public:
-    static ReceiverTask* createTask(task_info_t& taskInfo, const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core, uint32_t taskIntervalMicroseconds);
-    static ReceiverTask* createTask(const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core, uint32_t taskIntervalMicroseconds);
-    static ReceiverTask* createTask(task_info_t& taskInfo, const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core);
-    static ReceiverTask* createTask(const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core);
+    static ReceiverTask* create_task(task_info_t& task_info, const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core, uint32_t task_interval_microseconds);
+    static ReceiverTask* create_task(const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core, uint32_t task_interval_microseconds);
+    static ReceiverTask* create_task(task_info_t& task_info, const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core);
+    static ReceiverTask* create_task(const receiver_task_parameters_t& parameters, uint8_t priority, uint32_t core);
 public:
-    [[noreturn]] static void Task(void* arg);
+    [[noreturn]] static void task_static(void* arg);
     void loop();
 private:
     [[noreturn]] void task();

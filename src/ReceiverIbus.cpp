@@ -20,9 +20,9 @@ Called from within ReceiverSerial ISR.
 */
 bool ReceiverIbus::on_data_received_from_isr(uint8_t data)
 {
-    const timeUs32_t timeNowUs = timeUs();
+    const time_us32_t time_now_us = time_us();
     enum { TIME_ALLOWANCE = 500 };
-    if (timeNowUs > _start_time + TIME_NEEDED_PER_FRAME_US) { // cppcheck-suppress unsignedLessThanZero
+    if (time_now_us > _start_time + TIME_NEEDED_PER_FRAME_US) { // cppcheck-suppress unsignedLessThanZero
         _packet_index = 0;
         ++_dropped_packet_count;
     }
@@ -43,7 +43,7 @@ bool ReceiverIbus::on_data_received_from_isr(uint8_t data)
         } else if (_sync_byte != data) {
             return false;
         }
-        _start_time = timeNowUs;
+        _start_time = time_now_us;
     }
 
     _packet_isr[_packet_index] = data;
