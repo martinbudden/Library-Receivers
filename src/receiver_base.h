@@ -19,17 +19,6 @@ struct receiver_controls_pwm_t {
     uint16_t yaw;
 };
 
-/*! 
-Steps are 25 apart
-    a value of 0 corresponds to a channel value of 900 or less
-    a value of 48 corresponds to a channel value of 2100 or more
-48 steps between 900 and 2100
-*/
-struct receiver_channel_range_t {
-    uint8_t start_step;
-    uint8_t end_step;
-};
-
 /*!
 Abstract Base Class defining a receiver.
 */
@@ -107,12 +96,12 @@ public:
     virtual uint16_t get_channel_pwm(size_t index) const = 0;
     uint32_t get_auxiliary_channel_count() const { return _auxiliary_channel_count; }
     uint16_t get_auxiliary_channel(size_t index) const { return get_channel_pwm(index + STICK_COUNT); }
-    bool is_range_active(uint8_t auxiliary_channel_index, const receiver_channel_range_t& range) const {
-        if (range.start_step >= range.end_step) {
+    bool is_range_active(uint8_t auxiliary_channel_index, uint8_t range_start, uint8_t range_end) const {
+        if (range_start >= range_end) {
             return false;
         }
         const uint16_t channel_value = get_auxiliary_channel(auxiliary_channel_index);
-        return (channel_value >= CHANNEL_RANGE_MIN + (range.start_step*CHANNEL_RANGE_STEP) && channel_value < CHANNEL_RANGE_MIN + (range.end_step*CHANNEL_RANGE_STEP));
+        return (channel_value >= CHANNEL_RANGE_MIN + (range_start*CHANNEL_RANGE_STEP) && channel_value < CHANNEL_RANGE_MIN + (range_end*CHANNEL_RANGE_STEP));
     }
 
     uint32_t get_switch(size_t index) const { return static_cast<uint32_t>((_switches & (0b11U << (2*index))) >> (2*index)); }
