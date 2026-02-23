@@ -18,9 +18,9 @@
 #endif
 
 
-ReceiverTask::ReceiverTask(uint32_t task_interval_microseconds, const receiver_task_parameters_t& parameters) :
+ReceiverTask::ReceiverTask(uint32_t task_interval_microseconds, receiver_parameter_group_t& parameter_group) :
     TaskBase(task_interval_microseconds),
-    _task(parameters)
+    _parameter_group(parameter_group)
 {
 }
 
@@ -39,10 +39,10 @@ void ReceiverTask::loop()
     _tick_count_delta = tick_count - _tick_count_previous;
     _tick_count_previous = tick_count;
 
-    if (_task.receiver.update(_tick_count_delta)) {
-        _task.cockpit.update_controls(tick_count, _task.receiver, _task.rc_modes, _task.flight_controller, _task.motor_mixer);
+    if (_parameter_group.receiver.update(_tick_count_delta)) {
+        _parameter_group.cockpit.update_controls(tick_count, _parameter_group);
     } else {
-        _task.cockpit.check_failsafe(tick_count, _task.flight_controller, _task.motor_mixer);
+        _parameter_group.cockpit.check_failsafe(tick_count, _parameter_group);
     }
 }
 
@@ -56,13 +56,13 @@ Task function for the ReceiverTask. Sets up and runs the task loop() function.
     // BaseType_t is int, TickType_t is uint32_t
     if (_task_interval_microseconds == 0) {
         // event driven scheduling
-        const uint32_t ticksToWait = _task.cockpit.get_timeout_ticks();
+        const uint32_t ticksToWait = _parameter_group.cockpit.get_timeout_ticks();
         while (true) {
-            if (_task.receiver.WAIT_FOR_DATA_RECEIVED(ticksToWait) == pdPASS) {
+            if (_parameter_group.receiver.WAIT_FOR_DATA_RECEIVED(ticksToWait) == pdPASS) {
                 loop();
             } else {
                 // WAIT timed out, so check failsafe
-                _task.cockpit.check_failsafe(xTaskGetTickCount(), _task.flight_controller, _task.motor_mixer);
+                _parameter_group.cockpit.check_failsafe(xTaskGetTickCount(), _parameter_group);
             }
         }
     } else {
@@ -80,9 +80,9 @@ Task function for the ReceiverTask. Sets up and runs the task loop() function.
 #else
             vTaskDelayUntil(&_previous_wake_time_ticks, task_interval_ticks);
 #endif
-            while (_task.receiver.is_data_available()) {
+            while (_parameter_group.receiver.is_data_available()) {
                 // Read 1 byte from UART buffer and give it to the RX protocol parser
-                if (_task.receiver.on_data_received_from_isr(_task.receiver.read_byte())) {
+                if (_parameter_group.receiver.on_data_received_from_isr(_parameter_group.receiver.read_byte())) {
                     // on_data_received returns true once packet is complete
                     break;
                 }
