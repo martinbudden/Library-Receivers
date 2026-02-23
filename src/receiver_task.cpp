@@ -42,7 +42,7 @@ void ReceiverTask::loop()
     _tick_count_previous = tick_count;
 
     if (_receiver.update(_tick_count_delta)) {
-        _cockpit.update_controls(tick_count, _parameter_group);
+        _cockpit.update_controls(tick_count, _receiver, _parameter_group);
     } else {
         _cockpit.check_failsafe(tick_count, _parameter_group);
     }
