@@ -219,7 +219,7 @@ bool ReceiverAtomJoystick::unpack_packet(checkPacket_t checkPacket)
     }
     if (checkPacket == CHECK_PACKET) {
         if (checksum != _packet[PACKET_SIZE - 1]) {
-            //Serial.printf("checksum:%d, packet[24]:%d, packet[0]:%d, len:%d\r\n", checksum, _packet[24], _packet[0], receivedDataLen());
+            //Serial.printf("checksum:%d, packet[24]:%d, packet[0]:%d, len:%d\r\n", checksum, _packet[24], _packet[0], received_data_len());
             set_packet_empty();
             return false;
         }

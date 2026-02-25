@@ -43,14 +43,14 @@ public:
     static constexpr uint8_t PEER_3 = 4;
     static constexpr uint8_t MAX_PEER_COUNT = 4;
     struct received_data_t {
-        inline received_data_t(uint8_t* aBufferPtr, size_t aBufferSize) : bufferPtr(aBufferPtr), bufferSize(aBufferSize), len(0) {}
-        uint8_t* bufferPtr;
-        size_t bufferSize;
+        inline received_data_t(uint8_t* a_buffer_ptr, size_t a_buffer_size) : buffer_ptr(a_buffer_ptr), buffer_size(a_buffer_size), len(0) {}
+        uint8_t* buffer_ptr;
+        size_t buffer_size;
         size_t len;
     };
     struct peer_data_t {
         esp_now_peer_info_t peer_info { .peer_addr={0,0,0,0,0,0}, .lmk={0}, .channel=0, .ifidx=WIFI_IF_STA, .encrypt=false, .priv=nullptr };
-        received_data_t* receivedDataPtr {nullptr};
+        received_data_t* received_data_ptr {nullptr};
     };
 public:
     EspnowTransceiver(const uint8_t* my_mac_address, uint8_t channel);
@@ -91,7 +91,7 @@ private:
     static void on_data_received(const esp_now_recv_info_t* info, const uint8_t* data, int len); // len is int rather than size_t to match esp_now_recv_cb_t callback signature
 #endif
 private:
-    static const std::array<uint8_t, ESP_NOW_ETH_ALEN> broadcastMac_address;
+    static const std::array<uint8_t, ESP_NOW_ETH_ALEN> broadcast_mac_address;
     static EspnowTransceiver* transceiver; // alias of `this` to be used in on_data_sent and on_data_received callback functions
     // tick counts are used for instrumentation
     uint32_t _tick_count_previous {0};

@@ -48,7 +48,7 @@ bool ReceiverCrsf::on_data_received_from_isr(uint8_t data)
         _start_time = time_now_us;
         break;
     case 1:
-        _packetSize = data + 2;
+        _packet_size = data + 2;
         break;
     case 2:
         _packet_type = data;
@@ -58,9 +58,9 @@ bool ReceiverCrsf::on_data_received_from_isr(uint8_t data)
     _packet_isr.data[_packet_index] = data;
     ++_packet_index;
 
-    if (_packetSize != 0 && _packet_index == _packetSize) {
+    if (_packet_size != 0 && _packet_index == _packet_size) {
         _packet_index = 0;
-        _packetSize = 0;
+        _packet_size = 0;
         _packet = _packet_isr;
         return true;
     }

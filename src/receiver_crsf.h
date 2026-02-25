@@ -121,7 +121,7 @@ public:
     uint8_t get_packet_type() const { return _packet.value.type; }
 private:
     enum { MAX_PAYLOAD_SIZE = MAX_PACKET_SIZE - 6 };
-    uint32_t _packetSize {};
+    uint32_t _packet_size {};
     uint32_t _packet_type {};
     packet_u _packet_isr {};
     packet_u _packet {};

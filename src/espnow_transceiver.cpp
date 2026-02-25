@@ -13,7 +13,7 @@
 
 // see https://github.com/espressif/esp-idf/blob/v5.3.1/components/esp_wifi/include/esp_now.h
 
-constexpr std::array<uint8_t, ESP_NOW_ETH_ALEN> EspnowTransceiver::broadcastMac_address {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+constexpr std::array<uint8_t, ESP_NOW_ETH_ALEN> EspnowTransceiver::broadcast_mac_address {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 /*!
 Pointer to the transceiver used by the callback functions.
@@ -109,24 +109,24 @@ esp_err_t EspnowTransceiver::init()
     return ESP_OK;
 }
 
-esp_err_t EspnowTransceiver::init(received_data_t& received_data, const uint8_t* primaryMac_address)
+esp_err_t EspnowTransceiver::init(received_data_t& received_data, const uint8_t* primary_mac_address)
 {
-    //Serial.printf("EspnowTransceiver::init received data: %x, %d\r\n", received_data.bufferPtr, received_data.bufferSize);
+    //Serial.printf("EspnowTransceiver::init received data: %x, %d\r\n", received_data.buffer_ptr, received_data.buffer_size);
     esp_err_t err = init();
     if (err != ESP_OK) {
         return err;
     }
 
     received_data.len = 0;
-    _peer_data[PRIMARY_PEER].receivedDataPtr = &received_data;
+    _peer_data[PRIMARY_PEER].received_data_ptr = &received_data;
     _peer_data[PRIMARY_PEER].peer_info.channel = _channel;
     _peer_data[PRIMARY_PEER].peer_info.encrypt = false;
     _peer_count = 2; // since we have already added the broadcast peer
 
     // Set the primary MAC address now, if it is provided
     // Otherwise it will be set from `on_data_received` as part of the binding process
-    if (primaryMac_address != nullptr) {
-        err = set_primary_peer_mac_address(primaryMac_address);
+    if (primary_mac_address != nullptr) {
+        err = set_primary_peer_mac_address(primary_mac_address);
         if (err != ESP_OK) {
             static const char *TAG = "EspnowTransceiver::init";
             ESP_LOGE(TAG, "!!!! set_primary_peer_mac_address failed: %s", esp_err_to_name(err));
@@ -138,9 +138,9 @@ esp_err_t EspnowTransceiver::init(received_data_t& received_data, const uint8_t*
 
 esp_err_t EspnowTransceiver::add_broadcast_peer(uint8_t channel)
 {
-    // set receivedDataPtr to nullptr so no broadcast data is copied
-    _peer_data[BROADCAST_PEER].receivedDataPtr = nullptr;
-    memcpy(_peer_data[BROADCAST_PEER].peer_info.peer_addr, &broadcastMac_address[0], ESP_NOW_ETH_ALEN);
+    // set received_data_ptr to nullptr so no broadcast data is copied
+    _peer_data[BROADCAST_PEER].received_data_ptr = nullptr;
+    memcpy(_peer_data[BROADCAST_PEER].peer_info.peer_addr, &broadcast_mac_address[0], ESP_NOW_ETH_ALEN);
     _peer_data[BROADCAST_PEER].peer_info.channel = channel;
     _peer_data[BROADCAST_PEER].peer_info.encrypt = false;
 
@@ -159,7 +159,7 @@ esp_err_t EspnowTransceiver::add_broadcast_peer(uint8_t channel)
 esp_err_t EspnowTransceiver::add_secondary_peer(received_data_t& received_data, const uint8_t* mac_address)
 {
     received_data.len = 0;
-    _peer_data[PEER_2].receivedDataPtr = &received_data;
+    _peer_data[PEER_2].received_data_ptr = &received_data;
     _peer_data[PEER_2].peer_info.channel = _peer_data[PRIMARY_PEER].peer_info.channel;
     _peer_data[PEER_2].peer_info.encrypt = false;
     if (mac_address != nullptr) {
@@ -189,7 +189,7 @@ IRAM_ATTR bool EspnowTransceiver::mac_address_is_broadcast_mac_address(const uin
 {
     if (_peer_count > 0) {
         // check this is not the broadcast MAC address
-        if (memcmp(mac_address, &broadcastMac_address[0], ESP_NOW_ETH_ALEN) == 0) {
+        if (memcmp(mac_address, &broadcast_mac_address[0], ESP_NOW_ETH_ALEN) == 0) {
             return true;
         }
     }
@@ -243,13 +243,13 @@ IRAM_ATTR bool EspnowTransceiver::copy_received_data_to_buffer(const uint8_t* ma
     }
 
     for (size_t ii = PRIMARY_PEER; ii < _peer_count; ++ii) {
-        const auto& peerData = _peer_data[ii];
-        if (memcmp(mac_address, peerData.peer_info.peer_addr, ESP_NOW_ETH_ALEN) == 0) {
+        const auto& peer_data = _peer_data[ii];
+        if (memcmp(mac_address, peer_data.peer_info.peer_addr, ESP_NOW_ETH_ALEN) == 0) {
             // copy the received data into the _peer_data buffer
-            const size_t copyLength = std::min(len, peerData.receivedDataPtr->bufferSize); // so don't overwrite buffer
-            memcpy(peerData.receivedDataPtr->bufferPtr, data, copyLength);
+            const size_t copy_length = std::min(len, peer_data.received_data_ptr->buffer_size); // so don't overwrite buffer
+            memcpy(peer_data.received_data_ptr->buffer_ptr, data, copy_length);
             // and set the _peer_data length
-            peerData.receivedDataPtr->len = copyLength;
+            peer_data.received_data_ptr->len = copy_length;
             if (ii == PRIMARY_PEER) {
                 ++_received_packet_count; // only count packets being sent to the primary peer
                 const TickType_t tick_count = xTaskGetTickCount();
