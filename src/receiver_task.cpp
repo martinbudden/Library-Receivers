@@ -18,11 +18,11 @@
 #endif
 
 
-ReceiverTask::ReceiverTask(uint32_t task_interval_microseconds, ReceiverBase& receiver, CockpitBase& cockpit, receiver_parameter_group_t& parameter_group) :
+ReceiverTask::ReceiverTask(uint32_t task_interval_microseconds, ReceiverBase& receiver, CockpitBase& cockpit, receiver_context_t& context) :
     TaskBase(task_interval_microseconds),
     _receiver(receiver),
     _cockpit(cockpit),
-    _parameter_group(parameter_group)
+    _context(context)
 {
 }
 
@@ -42,9 +42,9 @@ void ReceiverTask::loop()
     _tick_count_previous = tick_count;
 
     if (_receiver.update(_tick_count_delta)) {
-        _cockpit.update_controls(tick_count, _receiver, _parameter_group);
+        _cockpit.update_controls(tick_count, _receiver, _context);
     } else {
-        _cockpit.check_failsafe(tick_count, _parameter_group);
+        _cockpit.check_failsafe(tick_count, _context);
     }
 }
 
@@ -64,7 +64,7 @@ Task function for the ReceiverTask. Sets up and runs the task loop() function.
                 loop();
             } else {
                 // WAIT timed out, so check failsafe
-                _cockpit.check_failsafe(xTaskGetTickCount(), _parameter_group);
+                _cockpit.check_failsafe(xTaskGetTickCount(), _context);
             }
         }
     } else {
